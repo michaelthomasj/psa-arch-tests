@@ -33,9 +33,10 @@ uint32_t baud_rate_error_x_1000 = 5U;
 
 sci_uart_instance_ctrl_t g_uart0_ctrl;
 
-baud_setting_t g_uart0_baud_setting = {
-/* Baud rate calculated with 0.160% error. */.abcse = 0, .abcs = 0, .bgdm = 1,
-        .cks = 0, .brr = 12, .mddr = (uint8_t) 256, .brme = false };
+baud_setting_t g_uart0_baud_setting =
+{
+/* Baud rate calculated with 0.469% error. */.abcse = 0,
+  .abcs = 0, .bgdm = 1, .cks = 1, .brr = 161, .mddr = (uint8_t) 256, .brme = false };
 
 /** UART extended configuration for UARTonSCI HAL driver */
 sci_uart_extended_cfg_t g_uart0_cfg_extend =
