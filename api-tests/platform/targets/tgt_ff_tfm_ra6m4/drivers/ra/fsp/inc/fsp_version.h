@@ -38,10 +38,10 @@
  **********************************************************************************************************************/
 
 /** FSP pack major version. */
-#define FSP_VERSION_MAJOR (1U)
+#define FSP_VERSION_MAJOR (2U)
 
 /** FSP pack minor version. */
-#define FSP_VERSION_MINOR (2U)
+#define FSP_VERSION_MINOR (0U)
 
 /** FSP pack patch version. */
 #define FSP_VERSION_PATCH (0U)
@@ -50,10 +50,10 @@
 #define FSP_VERSION_BUILD           (0U)
 
 /** Public FSP version name. */
-#define FSP_VERSION_STRING          ("1.2.0")
+#define FSP_VERSION_STRING          ("2.0.0-alpha3+20200720.da110e53")
 
 /** Unique FSP version ID. */
-#define FSP_VERSION_BUILD_STRING    ("Built with Renesas Arm Flexible Software Package version 1.2.0")
+#define FSP_VERSION_BUILD_STRING    ("Built with Renesas Advanced Flexible Software Package version 2.0.0-alpha3+20200720.da110e53")
 
 /**********************************************************************************************************************
  * Typedef definitions

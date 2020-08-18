@@ -12,16 +12,19 @@
 /* Vector table allocations */
 typedef enum IRQn
 {
-    Reset_IRQn            = -15,
-    NonMaskableInt_IRQn         = -14,  /* Non Maskable Interrupt */
-    HardFault_IRQn              = -13,  /* HardFault Interrupt */
-    MemoryManagement_IRQn       = -12,  /* Memory Management Interrupt */
-    BusFault_IRQn               = -11,  /* Bus Fault Interrupt */
-    UsageFault_IRQn             = -10,  /* Usage Fault Interrupt */
-    SecureFault_IRQn            = -9,   /* Secure Fault Interrupt */
-    SVCall_IRQn                 = -5,   /* SV Call Interrupt */
-    DebugMonitor_IRQn           = -4,   /* Debug Monitor Interrupt */
-    PendSV_IRQn                 = -2,   /* Pend SV Interrupt */
-    SysTick_IRQn                = -1,   /* System Tick Interrupt */
+    Reset_IRQn = -15,
+    NonMaskableInt_IRQn = -14,
+    HardFault_IRQn = -13,
+    MemoryManagement_IRQn = -12,
+    BusFault_IRQn = -11,
+    UsageFault_IRQn = -10,
+    SVCall_IRQn = -5,
+    DebugMonitor_IRQn = -4,
+    PendSV_IRQn = -2,
+    SysTick_IRQn = -1,
+    SCI0_RXI_IRQn = 0, /* SCI0 RXI (Receive data full) */
+    SCI0_TXI_IRQn = 1, /* SCI0 TXI (Transmit data empty) */
+    SCI0_TEI_IRQn = 2, /* SCI0 TEI (Transmit end) */
+    SCI0_ERI_IRQn = 3, /* SCI0 ERI (Receive error) */
 } IRQn_Type;
 #endif                                 /* VECTOR_DATA_H */

@@ -20,6 +20,7 @@
 
 #include <stdint.h>
 #include "r_sci_uart.h"
+#include "r_ioport.h"
 
 
 void user_uart_callback(uart_callback_args_t *p_args);

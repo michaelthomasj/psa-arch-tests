@@ -16,6 +16,7 @@
 **/
 
 #include "pal_uart.h"
+#include "platform_base_address.h"
 //#include "vector_data.h"
 
 #define VECTOR_NUMBER_SCI0_RXI ((IRQn_Type) 0) /* SCI0 RXI (Receive data full) */
@@ -23,19 +24,22 @@
 #define VECTOR_NUMBER_SCI0_TEI ((IRQn_Type) 2) /* SCI0 TEI (Transmit end) */
 #define VECTOR_NUMBER_SCI0_ERI ((IRQn_Type) 3) /* SCI0 ERI (Receive error) */
 
-volatile uint8_t tx_data_empty = 0;
+volatile uint8_t tx_data_empty = 1;
 volatile uint8_t tx_irq_triggered = 0;
 
+uint32_t baudrate = 9600U;
+bool bitrate_modulation = 0U;
+uint32_t baud_rate_error_x_1000 = 5U;
 
 sci_uart_instance_ctrl_t g_uart0_ctrl;
 
 baud_setting_t g_uart0_baud_setting =
 {
-/* Baud rate calculated with 0.160% error. */.abcse = 0,
-  .abcs = 0, .bgdm = 1, .cks = 0, .brr = 64, .mddr = (uint8_t) 256, .brme = false };
+/* Baud rate calculated with 0.469% error. */.abcse = 0,
+  .abcs = 0, .bgdm = 1, .cks = 1, .brr = 161, .mddr = (uint8_t) 256, .brme = false };
 
 /** UART extended configuration for UARTonSCI HAL driver */
-const sci_uart_extended_cfg_t g_uart0_cfg_extend =
+sci_uart_extended_cfg_t g_uart0_cfg_extend =
 { .clock = SCI_UART_CLOCK_INT,
   .rx_edge_start = SCI_UART_START_BIT_FALLING_EDGE,
   .noise_cancel = SCI_UART_NOISE_CANCELLATION_DISABLE,
@@ -47,7 +51,7 @@ const sci_uart_extended_cfg_t g_uart0_cfg_extend =
     };
 
 /** UART interface configuration */
-const uart_cfg_t g_uart0_cfg =
+uart_cfg_t g_uart0_cfg =
 { .channel = 0, .data_bits = UART_DATA_BITS_8, .parity = UART_PARITY_OFF, .stop_bits = UART_STOP_BITS_1, .p_callback =
           user_uart_callback,
   .p_context = NULL, .p_extend = &g_uart0_cfg_extend,
@@ -62,8 +66,43 @@ const uart_cfg_t g_uart0_cfg =
         };
 
  /* Instance structure to use this module. */
-const uart_instance_t g_uart0 =
+uart_instance_t g_uart0 =
 { .p_ctrl = &g_uart0_ctrl, .p_cfg = &g_uart0_cfg, .p_api = &g_uart_on_sci };
+
+ioport_instance_ctrl_t g_ioport_ctrl;
+const ioport_pin_cfg_t g_bsp_pin_cfg_data[] = {
+    {
+        .pin = BSP_IO_PORT_01_PIN_00,
+        .pin_cfg = ((uint32_t) IOPORT_CFG_PERIPHERAL_PIN | (uint32_t) IOPORT_PERIPHERAL_SCI0_2_4_6_8),
+    },
+    {
+        .pin = BSP_IO_PORT_01_PIN_01,
+        .pin_cfg = ((uint32_t) IOPORT_CFG_PERIPHERAL_PIN | (uint32_t) IOPORT_PERIPHERAL_SCI0_2_4_6_8),
+    },
+    {
+        .pin = BSP_IO_PORT_01_PIN_08,
+        .pin_cfg = ((uint32_t) IOPORT_CFG_PERIPHERAL_PIN | (uint32_t) IOPORT_PERIPHERAL_DEBUG),
+    },
+    {
+        .pin = BSP_IO_PORT_01_PIN_09,
+        .pin_cfg = ((uint32_t) IOPORT_CFG_PERIPHERAL_PIN | (uint32_t) IOPORT_PERIPHERAL_DEBUG),
+    },
+    {
+        .pin = BSP_IO_PORT_01_PIN_10,
+        .pin_cfg = ((uint32_t) IOPORT_CFG_PERIPHERAL_PIN | (uint32_t) IOPORT_PERIPHERAL_DEBUG),
+    },
+    {
+        .pin = BSP_IO_PORT_03_PIN_00,
+        .pin_cfg = ((uint32_t) IOPORT_CFG_PERIPHERAL_PIN | (uint32_t) IOPORT_PERIPHERAL_DEBUG),
+    },
+};
+
+const ioport_cfg_t g_bsp_pin_cfg = {
+    .number_of_pins = sizeof(g_bsp_pin_cfg_data)/sizeof(ioport_pin_cfg_t),
+    .p_pin_cfg_data = &g_bsp_pin_cfg_data[0],
+};
+const ioport_instance_t g_ioport =
+{ .p_api = &g_ioport_on_ioport, .p_ctrl = &g_ioport_ctrl, .p_cfg = &g_bsp_pin_cfg, };
 
 /**
     @brief    - This function initializes the UART
@@ -71,6 +110,13 @@ const uart_instance_t g_uart0 =
 
 void pal_uart_ra6m4_init(uint32_t uart_base_addr)
 {
+    R_IOPORT_Open (&g_ioport_ctrl, &g_bsp_pin_cfg);
+
+    /*R_SCI_UART_BaudCalculate(baudrate, bitrate_modulation, baud_rate_error_x_1000, &g_uart0_baud_setting);
+
+    g_uart0_cfg_extend.p_baud_setting = &g_uart0_baud_setting;
+    g_uart0_cfg.p_extend = &g_uart0_cfg_extend;
+    g_uart0.p_cfg = &g_uart0_cfg;*/
 
     R_SCI_UART_Open(g_uart0.p_ctrl, g_uart0.p_cfg);
 
@@ -82,7 +128,7 @@ void pal_uart_ra6m4_init(uint32_t uart_base_addr)
 static int pal_uart_ra6m4_is_tx_empty(void)
 {
     /* Note: Check for empty TX FIFO */
-    return (!(tx_data_empty));
+    return ((tx_data_empty));
 }
 
 /**
@@ -91,11 +137,14 @@ static int pal_uart_ra6m4_is_tx_empty(void)
 static void pal_uart_ra6m4_putc(uint8_t c)
 {
     uint32_t bytes = 1U;
+    
     /* ensure TX buffer to be empty */
-    while (!pal_uart_ra6m4_is_tx_empty());
-
     /* write the data (upper 24 bits are reserved) */
+    while (!pal_uart_ra6m4_is_tx_empty());
+    tx_data_empty = 0U;
+
     R_SCI_UART_Write(g_uart0.p_ctrl, &c, bytes);
+
     if (c == '\n')
     {
         pal_uart_ra6m4_putc('\r');
@@ -197,10 +246,11 @@ void user_uart_callback(uart_callback_args_t *p_args)
 {
     if(p_args->event == UART_EVENT_TX_DATA_EMPTY)
     {
-       tx_data_empty = 1;
+       tx_data_empty = 1U;
     }
     if(p_args->event == UART_EVENT_TX_COMPLETE)
     {
-       tx_irq_triggered = 1;
+       tx_data_empty = 1U;
+       tx_irq_triggered = 1U;
     }
 }

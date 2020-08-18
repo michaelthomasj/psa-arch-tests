@@ -18,52 +18,30 @@
  * OF SUCH LOSS, DAMAGES, CLAIMS OR COSTS.
  **********************************************************************************************************************/
 
-/***********************************************************************************************************************
- * Includes   <System Includes> , "Project Includes"
- **********************************************************************************************************************/
-#include "bsp_api.h"
-#include "bsp_irq.h"
-/** ELC event definitions. */
+#ifndef BSP_SECURITY_H
+#define BSP_SECURITY_H
+
+/** Common macro for FSP header files. There is also a corresponding FSP_FOOTER macro at the end of this file. */
+FSP_HEADER
 
 /***********************************************************************************************************************
  * Macro definitions
  **********************************************************************************************************************/
-#define BSP_IRQ_UINT32_MAX    (0xFFFFFFFFU)
 
 /***********************************************************************************************************************
  * Typedef definitions
  **********************************************************************************************************************/
 
 /***********************************************************************************************************************
- * Exported global variables (to be accessed by other files)
+ * Exported global variables
  **********************************************************************************************************************/
-
-/* This table is used to store the context in the ISR. */
-void * gp_renesas_isr_context[BSP_ICU_VECTOR_MAX_ENTRIES];
 
 /***********************************************************************************************************************
- * Private global variables and functions
+ * Exported global functions (to be accessed by other files)
  **********************************************************************************************************************/
-const bsp_interrupt_event_t g_interrupt_event_link_select[BSP_ICU_VECTOR_MAX_ENTRIES] BSP_WEAK_REFERENCE;
+void R_BSP_NonSecureEnter(void);
 
-/*******************************************************************************************************************//**
- * @addtogroup BSP_MCU
- *
- * @{
- **********************************************************************************************************************/
+/** Common macro for FSP header files. There is also a corresponding FSP_HEADER macro at the top of this file. */
+FSP_FOOTER
 
-/** @} (end addtogroup BSP_MCU) */
-
-/*******************************************************************************************************************//**
- *        Using the vector table information section that has been built by the linker and placed into ROM in the
- * .vector_info. section, this function will initialize the ICU so that configured ELC events will trigger interrupts
- * in the NVIC.
- *
- **********************************************************************************************************************/
-void bsp_irq_cfg (void)
-{
-    for (uint32_t i = 0U; i < BSP_ICU_VECTOR_MAX_ENTRIES; i++)
-    {
-        R_ICU->IELSR[i] = (uint32_t) g_interrupt_event_link_select[i];
-    }
-}
+#endif

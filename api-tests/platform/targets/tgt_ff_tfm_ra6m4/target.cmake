@@ -51,6 +51,11 @@ else()
 		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/nvmem/pal_nvmem.c
 		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/uart/pal_uart.c
 		${PSA_ROOT_DIR}/platform/drivers/watchdog/cmsdk/pal_wd_cmsdk.c
+		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/r_ioport/r_ioport.c
+		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/r_sci_uart/r_sci_uart.c
+		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/r_flash_hp/r_flash_hp.c
+		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/bsp/mcu/all/bsp_irq.c
+		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/bsp/mcu/all/bsp_io.c
 	)
 endif()
 if(${SUITE} STREQUAL "CRYPTO")
@@ -92,7 +97,7 @@ list(APPEND PAL_DRIVER_INCLUDE_PATHS
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/uart
 	${PSA_ROOT_DIR}/platform/drivers/watchdog/cmsdk
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/arm/CMSIS_5/CMSIS/Core/Include
-	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/board/ralm3_ek
+	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/board/ra6m4_ek
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/CMSIS/Core/Include
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/Device/Config
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/Device/Include
@@ -101,10 +106,11 @@ list(APPEND PAL_DRIVER_INCLUDE_PATHS
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/inc/api
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/inc/instances
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/bsp/cmsis/Device/RENESAS/Include
-	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/bsp/cmsis/Device/RENESAS/Source
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/bsp/mcu/all
+	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/bsp/mcu/ra6m4
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/r_ioport
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/r_sci_uart
+	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/r_flash_hp
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra_cfg/fsp_cfg
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra_cfg/fsp_cfg/bsp
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra_gen

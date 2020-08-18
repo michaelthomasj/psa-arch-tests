@@ -86,7 +86,7 @@ int pal_wd_timer_disable_ns(addr_t base_addr)
 **/
 int pal_nvmem_read_ns(addr_t base, uint32_t offset, void *buffer, int size)
 {
-    if (nvmem_read(base, offset, buffer, size))
+    if (nvmem_ra6m4_read(base, offset, buffer, size))
     {
         return PAL_STATUS_SUCCESS;
     }
@@ -106,7 +106,7 @@ int pal_nvmem_read_ns(addr_t base, uint32_t offset, void *buffer, int size)
 **/
 int pal_nvmem_write_ns(addr_t base, uint32_t offset, void *buffer, int size)
 {
-    if (nvmem_write(base, offset, buffer, size))
+    if (nvmem_ra6m4_write(base, offset, buffer, size))
     {
         return PAL_STATUS_SUCCESS;
     }

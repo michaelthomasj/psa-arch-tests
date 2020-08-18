@@ -3,5 +3,5 @@
 #define BSP_PIN_CFG_H_
 #include "bsp_api.h"
 #include "r_ioport_api.h"
-extern const ioport_cfg_t g_bsp_pin_cfg; /* RA6M3-EK.pincfg */
+extern const ioport_cfg_t g_bsp_pin_cfg; /* R7FA6M4AF3CFB.pincfg */
 #endif /* BSP_PIN_CFG_H_ */

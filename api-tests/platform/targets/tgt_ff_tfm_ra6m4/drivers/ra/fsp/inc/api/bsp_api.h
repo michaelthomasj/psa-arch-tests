@@ -26,7 +26,6 @@
  **********************************************************************************************************************/
 
 /* FSP Common Includes. */
-//#include "../../inc/fsp_common_api.h"
 #include "fsp_common_api.h"
 
 /* Gets MCU configuration information. */
@@ -44,11 +43,8 @@
 #include "vector_data.h"
 
 /* CMSIS-CORE Renesas Device Files. Must come after bsp_feature.h, which is included in bsp_cfg.h. */
-//#include "../../src/bsp/cmsis/Device/RENESAS/Include/renesas.h"
-//#include "../../src/bsp/cmsis/Device/RENESAS/Include/system.h"
 #include "renesas.h"
 #include "system.h"
-
 
 #if defined(__GNUC__) && !defined(__ARMCC_VERSION)
 
@@ -57,35 +53,22 @@
 #endif
 
 /* BSP Common Includes. */
-//#include "../../src/bsp/mcu/all/bsp_common.h"
 #include "bsp_common.h"
 
 /* BSP MCU Specific Includes. */
-/*#include "../../src/bsp/mcu/all/bsp_register_protection.h"
-#include "../../src/bsp/mcu/all/bsp_irq.h"
-#include "../../src/bsp/mcu/all/bsp_io.h"
-#include "../../src/bsp/mcu/all/bsp_group_irq.h"
-#include "../../src/bsp/mcu/all/bsp_clocks.h"
-#include "../../src/bsp/mcu/all/bsp_module_stop.h"*/
-
 #include "bsp_register_protection.h"
 #include "bsp_irq.h"
 #include "bsp_io.h"
 #include "bsp_group_irq.h"
 #include "bsp_clocks.h"
 #include "bsp_module_stop.h"
+#include "bsp_security.h"
 
 /* Factory MCU information. */
-//#include "../../inc/fsp_features.h"
 #include "fsp_features.h"
 
 /* BSP Common Includes (Other than bsp_common.h) */
-/*#include "../../src/bsp/mcu/all/bsp_delay.h"
-
-#include "../../src/bsp/mcu/all/bsp_mcu_api.h" */
-
 #include "bsp_delay.h"
-
 #include "bsp_mcu_api.h"
 
 /** Common macro for FSP header files. There is also a corresponding FSP_FOOTER macro at the end of this file. */

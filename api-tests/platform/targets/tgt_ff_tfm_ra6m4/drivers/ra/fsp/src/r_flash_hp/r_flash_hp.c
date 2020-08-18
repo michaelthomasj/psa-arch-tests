@@ -22,6 +22,7 @@
  * Includes
  **********************************************************************************************************************/
 #include "bsp_api.h"
+#include "bsp_irq.h"
 #include <string.h>
 #include "r_flash_hp.h"
 
@@ -95,7 +96,11 @@
 
 /**  Configuration set Command offset*/
 #define FLASH_HP_FCU_CONFIG_SET_ID_BYTE                 (0x0000A150U)
-#define FLASH_HP_FCU_CONFIG_SET_ACCESS_STARTUP          (0x0000A160U)
+#ifndef BSP_MCU_GROUP_RA6M4
+ #define FLASH_HP_FCU_CONFIG_SET_ACCESS_STARTUP         (0x0000A160U)
+#else
+ #define FLASH_HP_FCU_CONFIG_SET_ACCESS_STARTUP         (0x0100A130U)
+#endif
 
 /* Zero based offset into g_configuration_area_data[] for FAWS */
 #define FLASH_HP_FCU_CONFIG_SET_FAWS_OFFSET             (2U)
@@ -125,6 +130,11 @@
 #define FLASH_HP_FREQUENCY_IN_HZ                        (1000000U)
 
 #define FLASH_HP_FENTRYR_READ_MODE                      (0xAA00U)
+
+#define FLASH_HP_FMEPROT_LOCK                           (0xD901)
+#define FLASH_HP_FMEPROT_UNLOCK                         (0xD900)
+
+#define FLASH_HP_OFS_SAS_MASK                           (0x7FFFU)
 
 #define FLASH_HP_FAEINT_DFAEIE                          (0x08)
 #define FLASH_HP_FAEINT_CMDLKIE                         (0x10)
@@ -173,7 +183,8 @@
 #if (FLASH_HP_CFG_CODE_FLASH_PROGRAMMING_ENABLE == 1)
 static uint16_t g_configuration_area_data[FLASH_HP_CONFIG_SET_ACCESS_WORD_CNT] = {UINT16_MAX};
 #endif
-#define FLASH_LP_DF_START_ADDRESS    (0x40100000)
+
+#define FLASH_HP_DF_START_ADDRESS    (BSP_FEATURE_FLASH_DATA_FLASH_START)
 
 static const flash_block_info_t g_code_flash_macro_info[] =
 {
@@ -199,8 +210,8 @@ static const flash_regions_t g_flash_code_region =
 
 const flash_block_info_t g_data_flash_macro_info =
 {
-    .block_section_st_addr  = FLASH_LP_DF_START_ADDRESS,
-    .block_section_end_addr = FLASH_LP_DF_START_ADDRESS + BSP_DATA_FLASH_SIZE_BYTES - 1,
+    .block_section_st_addr  = FLASH_HP_DF_START_ADDRESS,
+    .block_section_end_addr = FLASH_HP_DF_START_ADDRESS + BSP_DATA_FLASH_SIZE_BYTES - 1,
     .block_size             = FLASH_HP_DATA_BLOCK_SIZE,
     .block_size_write       = BSP_FEATURE_FLASH_HP_DF_WRITE_SIZE
 };
@@ -547,11 +558,11 @@ fsp_err_t R_FLASH_HP_Erase (flash_ctrl_t * const p_api_ctrl, uint32_t const addr
  #if (FLASH_HP_CFG_PARAM_CHECKING_ENABLE == 1)
         uint32_t num_bytes = num_blocks * BSP_FEATURE_FLASH_HP_DF_BLOCK_SIZE;
 
-        FSP_ERROR_RETURN((start_address >= (FLASH_LP_DF_START_ADDRESS)) &&
-                         (start_address < (FLASH_LP_DF_START_ADDRESS + BSP_DATA_FLASH_SIZE_BYTES)),
+        FSP_ERROR_RETURN((start_address >= (FLASH_HP_DF_START_ADDRESS)) &&
+                         (start_address < (FLASH_HP_DF_START_ADDRESS + BSP_DATA_FLASH_SIZE_BYTES)),
                          FSP_ERR_INVALID_ADDRESS);
 
-        FSP_ERROR_RETURN(start_address + num_bytes <= (FLASH_LP_DF_START_ADDRESS + BSP_DATA_FLASH_SIZE_BYTES),
+        FSP_ERROR_RETURN(start_address + num_bytes <= (FLASH_HP_DF_START_ADDRESS + BSP_DATA_FLASH_SIZE_BYTES),
                          FSP_ERR_INVALID_BLOCKS);
  #endif
 
@@ -695,7 +706,7 @@ fsp_err_t R_FLASH_HP_IdCodeSet (flash_ctrl_t * const  p_api_ctrl,
 
     fsp_err_t err = FSP_SUCCESS;
 
-#if (FLASH_HP_CFG_CODE_FLASH_PROGRAMMING_ENABLE == 1)
+#if (FLASH_HP_CFG_CODE_FLASH_PROGRAMMING_ENABLE == 1) && (BSP_FEATURE_FLASH_SUPPORTS_ID_CODE == 1)
  #if (FLASH_HP_CFG_PARAM_CHECKING_ENABLE)
 
     /* Verify the id bytes are not in code flash. They will not be available in P/E mode. */
@@ -752,7 +763,7 @@ fsp_err_t R_FLASH_HP_AccessWindowSet (flash_ctrl_t * const p_api_ctrl,
 
     fsp_err_t err = FSP_SUCCESS;
 
-#if (FLASH_HP_CFG_CODE_FLASH_PROGRAMMING_ENABLE == 1)
+#if (FLASH_HP_CFG_CODE_FLASH_PROGRAMMING_ENABLE == 1) && (BSP_FEATURE_FLASH_SUPPORTS_ACCESS_WINDOW == 1)
  #if (FLASH_HP_CFG_PARAM_CHECKING_ENABLE)
 
     /* Verify the control block is not null and is opened. */
@@ -804,7 +815,7 @@ fsp_err_t R_FLASH_HP_AccessWindowClear (flash_ctrl_t * const p_api_ctrl)
 
     fsp_err_t err = FSP_SUCCESS;
 
-#if (FLASH_HP_CFG_CODE_FLASH_PROGRAMMING_ENABLE == 1)
+#if (FLASH_HP_CFG_CODE_FLASH_PROGRAMMING_ENABLE == 1) && (BSP_FEATURE_FLASH_SUPPORTS_ACCESS_WINDOW == 1)
  #if (FLASH_HP_CFG_PARAM_CHECKING_ENABLE)
 
     /* Verify the control block is not null and is opened. */
@@ -1287,20 +1298,20 @@ static fsp_err_t r_flash_hp_write_read_bc_parameter_checking (flash_hp_instance_
     uint32_t write_size;
 
     /* If invalid address or number of bytes return error. */
- #if (FLASH_HP_CFG_CODE_FLASH_PROGRAMMING_ENABLE == 1)
+ /*#if (FLASH_HP_CFG_CODE_FLASH_PROGRAMMING_ENABLE == 1)
     if (flash_address < BSP_ROM_SIZE_BYTES)
     {
         FSP_ERROR_RETURN(flash_address + num_bytes <= BSP_ROM_SIZE_BYTES, FSP_ERR_INVALID_SIZE);
         write_size = BSP_FEATURE_FLASH_HP_CF_WRITE_SIZE;
     }
     else
- #endif
+ #endif*/
     {
  #if (FLASH_HP_CFG_DATA_FLASH_PROGRAMMING_ENABLE == 1)
-        FSP_ERROR_RETURN((flash_address >= (FLASH_LP_DF_START_ADDRESS)) &&
-                         (flash_address < (FLASH_LP_DF_START_ADDRESS + BSP_DATA_FLASH_SIZE_BYTES)),
+        FSP_ERROR_RETURN((flash_address >= (FLASH_HP_DF_START_ADDRESS)) &&
+                         (flash_address < (FLASH_HP_DF_START_ADDRESS + BSP_DATA_FLASH_SIZE_BYTES)),
                          FSP_ERR_INVALID_ADDRESS);
-        FSP_ERROR_RETURN((flash_address + num_bytes <= (FLASH_LP_DF_START_ADDRESS + BSP_DATA_FLASH_SIZE_BYTES)),
+        FSP_ERROR_RETURN((flash_address + num_bytes <= (FLASH_HP_DF_START_ADDRESS + BSP_DATA_FLASH_SIZE_BYTES)),
                          FSP_ERR_INVALID_SIZE);
         write_size = BSP_FEATURE_FLASH_HP_DF_WRITE_SIZE;
  #else
@@ -1755,12 +1766,11 @@ static fsp_err_t flash_hp_pe_mode_exit ()
     /* If the device is coming out of code flash p/e mode restore the flash cache state. */
     if (FLASH_HP_FENTRYR_CF_PE_MODE == pe_mode)
     {
-        /* Invalidate the flash cache and wait until it is invalidated. (See section 55.3.2.2 "Operation" of the Flash
-         * Cache in the RA6M3 manual R01UH0878EJ0100). */
-        R_FCACHE->FCACHEIV = 1U;
-        FSP_HARDWARE_REGISTER_WAIT(R_FCACHE->FCACHEIV, 0U);
+#if BSP_FEATURE_FLASH_HP_HAS_FMEPROT
+        R_FACI_HP->FMEPROT = FLASH_HP_FMEPROT_LOCK;
+#endif
 
-        R_FCACHE->FCACHEE = 1U;
+        R_BSP_FlashCacheEnable();
     }
 
     /* If a command locked state was detected earlier, then return that error. */
@@ -2004,10 +2014,6 @@ static fsp_err_t flash_hp_set_startup_area_boot (flash_hp_instance_ctrl_t * p_ct
                                                  flash_startup_area_swap_t  swap_type,
                                                  bool                       is_temporary)
 {
-    /* Do not call functions with multiple volatile parameters. */
-    uint32_t faws = R_FACI_HP->FAWMON_b.FAWS;
-    uint32_t fawe = R_FACI_HP->FAWMON_b.FAWE;
-
     /* Update Flash state and enter Code Flash P/E mode */
     fsp_err_t err = flash_hp_enter_pe_cf_mode(p_ctrl);
     FSP_ERROR_RETURN(FSP_SUCCESS == err, err);
@@ -2018,8 +2024,20 @@ static fsp_err_t flash_hp_set_startup_area_boot (flash_hp_instance_ctrl_t * p_ct
     }
     else
     {
+ #if BSP_FEATURE_FLASH_SUPPORTS_ACCESS_WINDOW
+
+        /* Do not call functions with multiple volatile parameters. */
+        uint32_t faws = R_FACI_HP->FAWMON_b.FAWS;
+        uint32_t fawe = R_FACI_HP->FAWMON_b.FAWE;
+
         /* Configure the configuration area to be written. */
         flash_hp_configuration_area_data_setup(~swap_type & 0x1, faws, fawe);
+ #else
+        memset(g_configuration_area_data, UINT8_MAX, sizeof(g_configuration_area_data));
+
+        g_configuration_area_data[FLASH_HP_FCU_CONFIG_SET_FAWE_BTFLG_OFFSET] =
+            (uint16_t) (((((uint16_t) ~swap_type) & 0x1U) << 15U) | FLASH_HP_OFS_SAS_MASK);
+ #endif
 
         /* Write the configuration area to the access/startup region. */
         err = flash_hp_configuration_area_write(p_ctrl, FLASH_HP_FCU_CONFIG_SET_ACCESS_STARTUP);
@@ -2361,8 +2379,10 @@ static fsp_err_t flash_hp_enter_pe_cf_mode (flash_hp_instance_ctrl_t * const p_c
     /* Timeout counter. */
     volatile uint32_t wait_count = FLASH_HP_FRDY_CMD_TIMEOUT;
 
-    /* While the Flash API is in use we will disable the FLash Cache. */
-    R_FCACHE->FCACHEE = 0U;
+    /* While the Flash API is in use we will disable the flash cache. */
+ #if BSP_FEATURE_BSP_FLASH_CACHE_DISABLE_OPM
+    R_BSP_FlashCacheDisable();
+ #endif
 
     /* If interrupts are being used then disable interrupts. */
     if (p_ctrl->p_cfg->data_flash_bgo == true)
@@ -2374,6 +2394,10 @@ static fsp_err_t flash_hp_enter_pe_cf_mode (flash_hp_instance_ctrl_t * const p_c
         R_BSP_IrqDisable(p_ctrl->p_cfg->err_irq);
     }
 
+ #if BSP_FEATURE_FLASH_HP_HAS_FMEPROT
+    R_FACI_HP->FMEPROT = FLASH_HP_FMEPROT_UNLOCK;
+ #endif
+
     /* Enter code flash PE mode */
     R_FACI_HP->FENTRYR = FLASH_HP_FENTRYR_TRANSITION_TO_CF_PE;
 
@@ -2384,8 +2408,9 @@ static fsp_err_t flash_hp_enter_pe_cf_mode (flash_hp_instance_ctrl_t * const p_c
         /* Wait until FENTRYR is 0x0001UL unless timeout occurs. */
         if (wait_count == 0U)
         {
+
             /* if FENTRYR is not set after max timeout, FSP_ERR_PE_FAILURE*/
-            err = FSP_ERR_PE_FAILURE;
+            return FSP_ERR_PE_FAILURE;
         }
 
         wait_count--;

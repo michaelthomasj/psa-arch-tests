@@ -26,6 +26,10 @@
 #ifndef BSP_COMPILER_SUPPORT_H
 #define BSP_COMPILER_SUPPORT_H
 
+#if (defined(__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3))
+ #include <arm_cmse.h>
+#endif
+
 /***********************************************************************************************************************
  * Macro definitions
  **********************************************************************************************************************/
@@ -57,16 +61,28 @@
 
 #define BSP_ALIGN_VARIABLE(x)      __attribute__((aligned(x)))
 
-#define BSP_PACKED             __attribute__((aligned(1)))
+#define BSP_PACKED                    __attribute__((aligned(1)))
 
-#define BSP_WEAK_REFERENCE     __attribute__((weak))
+#define BSP_WEAK_REFERENCE            __attribute__((weak))
 
 /** Stacks (and heap) must be sized and aligned to an integer multiple of this number. */
-#define BSP_STACK_ALIGNMENT    (8)
+#define BSP_STACK_ALIGNMENT           (8)
 
 /***********************************************************************************************************************
- * Typedef definitions
+ * TrustZone definitions
  **********************************************************************************************************************/
+#if (defined(__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3))
+ #if defined(__ICCARM__)               /* IAR compiler */
+  #define BSP_CMSE_NONSECURE_CALL     __cmse_nonsecure_call
+  #define BSP_CMSE_NONSECURE_ENTRY    __cmse_nonsecure_entry
+ #else
+  #define BSP_CMSE_NONSECURE_CALL     __attribute__((cmse_nonsecure_call))
+  #define BSP_CMSE_NONSECURE_ENTRY    __attribute__((cmse_nonsecure_entry))
+ #endif
+#else
+ #define BSP_CMSE_NONSECURE_CALL
+ #define BSP_CMSE_NONSECURE_ENTRY
+#endif
 
 /***********************************************************************************************************************
  * Exported global variables

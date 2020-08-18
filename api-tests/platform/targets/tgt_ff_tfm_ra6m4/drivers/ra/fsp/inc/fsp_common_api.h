@@ -58,8 +58,12 @@
 #endif
 
 /** FSP Header and Footer definitions */
-#define FSP_HEADER    FSP_CPP_HEADER
-#define FSP_FOOTER    FSP_CPP_FOOTER
+#define FSP_HEADER             FSP_CPP_HEADER
+#define FSP_FOOTER             FSP_CPP_FOOTER
+
+/** Macro to be used when argument to function is ignored since function call is NSC and the parameter is statically
+ *  defined on the Secure side. */
+#define FSP_SECURE_ARGUMENT    (NULL)
 
 /**********************************************************************************************************************
  * Typedef definitions
@@ -102,6 +106,7 @@ typedef enum e_fsp_err
     FSP_ERR_NOT_ERASED            = 31,                     ///< Erase verification failed
     FSP_ERR_SECTOR_RELEASE_FAILED = 32,                     ///< Sector release failed
     FSP_ERR_NOT_INITIALIZED       = 33,                     ///< Required initialization not complete
+    FSP_ERR_NO_CALLBACK_MEMORY    = 34,                     ///< Non-secure callback memory not provided for non-secure callback
 
     /* Start of RTOS only error codes */
     FSP_ERR_INTERNAL     = 100,                             ///< Internal error
