@@ -42,6 +42,11 @@ if(${SUITE} STREQUAL "IPC")
 		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/nvmem/pal_nvmem.c
 		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/uart/pal_uart.c
 		${PSA_ROOT_DIR}/platform/drivers/watchdog/cmsdk/pal_wd_cmsdk.c
+		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/r_ioport/r_ioport.c
+		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/r_sci_uart/r_sci_uart.c
+		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/r_flash_hp/r_flash_hp.c
+		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/bsp/mcu/all/bsp_irq.c
+		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/src/bsp/mcu/all/bsp_io.c
 	)
 else()
 	list(APPEND PAL_SRC_C_NSPE
