@@ -24,22 +24,22 @@
 #define VECTOR_NUMBER_SCI0_TEI ((IRQn_Type) 2) /* SCI0 TEI (Transmit end) */
 #define VECTOR_NUMBER_SCI0_ERI ((IRQn_Type) 3) /* SCI0 ERI (Receive error) */
 
-volatile uint8_t tx_data_empty = 1;
-volatile uint8_t tx_irq_triggered = 0;
+static volatile uint8_t tx_data_empty = 1;
+static volatile uint8_t tx_irq_triggered = 0;
 
-uint32_t baudrate = 9600U;
-bool bitrate_modulation = 0U;
-uint32_t baud_rate_error_x_1000 = 5U;
+//static uint32_t baudrate = 9600U;
+//static bool bitrate_modulation = 0U;
+//static uint32_t baud_rate_error_x_1000 = 5U;
 
-sci_uart_instance_ctrl_t g_uart0_ctrl;
+static sci_uart_instance_ctrl_t g_uart0_ctrl;
 
-baud_setting_t g_uart0_baud_setting =
+static baud_setting_t g_uart0_baud_setting =
 {
 /* Baud rate calculated with 0.469% error. */.abcse = 0,
   .abcs = 0, .bgdm = 1, .cks = 1, .brr = 161, .mddr = (uint8_t) 256, .brme = false };
 
 /** UART extended configuration for UARTonSCI HAL driver */
-sci_uart_extended_cfg_t g_uart0_cfg_extend =
+static sci_uart_extended_cfg_t g_uart0_cfg_extend =
 { .clock = SCI_UART_CLOCK_INT,
   .rx_edge_start = SCI_UART_START_BIT_FALLING_EDGE,
   .noise_cancel = SCI_UART_NOISE_CANCELLATION_DISABLE,
@@ -51,9 +51,9 @@ sci_uart_extended_cfg_t g_uart0_cfg_extend =
     };
 
 /** UART interface configuration */
-uart_cfg_t g_uart0_cfg =
+static uart_cfg_t g_uart0_cfg =
 { .channel = 0, .data_bits = UART_DATA_BITS_8, .parity = UART_PARITY_OFF, .stop_bits = UART_STOP_BITS_1, .p_callback =
-          user_uart_callback,
+          pal_user_uart_callback,
   .p_context = NULL, .p_extend = &g_uart0_cfg_extend,
   .p_transfer_tx = NULL,
   .p_transfer_rx = NULL,
@@ -69,8 +69,8 @@ uart_cfg_t g_uart0_cfg =
 uart_instance_t g_uart0 =
 { .p_ctrl = &g_uart0_ctrl, .p_cfg = &g_uart0_cfg, .p_api = &g_uart_on_sci };
 
-ioport_instance_ctrl_t g_ioport_ctrl;
-const ioport_pin_cfg_t g_bsp_pin_cfg_data[] = {
+static ioport_instance_ctrl_t g_ioport_ctrl;
+static const ioport_pin_cfg_t g_bsp_pin_cfg_data[] = {
     {
         .pin = BSP_IO_PORT_01_PIN_00,
         .pin_cfg = ((uint32_t) IOPORT_CFG_PERIPHERAL_PIN | (uint32_t) IOPORT_PERIPHERAL_SCI0_2_4_6_8),
@@ -97,7 +97,7 @@ const ioport_pin_cfg_t g_bsp_pin_cfg_data[] = {
     },
 };
 
-const ioport_cfg_t g_bsp_pin_cfg = {
+static const ioport_cfg_t g_bsp_pin_cfg = {
     .number_of_pins = sizeof(g_bsp_pin_cfg_data)/sizeof(ioport_pin_cfg_t),
     .p_pin_cfg_data = &g_bsp_pin_cfg_data[0],
 };
@@ -242,7 +242,7 @@ void pal_uart_ra6m4_disable_irq(void)
     tx_irq_triggered = 0;
 }
 
-void user_uart_callback(uart_callback_args_t *p_args)
+void pal_user_uart_callback(uart_callback_args_t *p_args)
 {
     if(p_args->event == UART_EVENT_TX_DATA_EMPTY)
     {

@@ -23,7 +23,7 @@
 #include "r_ioport.h"
 
 
-void user_uart_callback(uart_callback_args_t *p_args);
+void pal_user_uart_callback(uart_callback_args_t *p_args);
 
 
 /* function prototypes */
