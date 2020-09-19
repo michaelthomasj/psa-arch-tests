@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@
 #include "test_data.h"
 #include "val_crypto.h"
 
-client_test_t test_c014_crypto_list[] = {
+const client_test_t test_c014_crypto_list[] = {
     NULL,
     psa_hash_finish_test,
     psa_hash_finish_inactive_operation_handle,
@@ -31,7 +31,7 @@ client_test_t test_c014_crypto_list[] = {
 
 static int g_test_count = 1;
 
-int32_t psa_hash_finish_test(caller_security_t caller)
+int32_t psa_hash_finish_test(caller_security_t caller __UNUSED)
 {
     int                     num_checks = sizeof(check1)/sizeof(check1[0]);
     int32_t                 i, status;
@@ -97,7 +97,7 @@ int32_t psa_hash_finish_test(caller_security_t caller)
     return VAL_STATUS_SUCCESS;
 }
 
-int32_t psa_hash_finish_inactive_operation_handle(caller_security_t caller)
+int32_t psa_hash_finish_inactive_operation_handle(caller_security_t caller __UNUSED)
 {
     psa_hash_operation_t    operation;
     char                    input = 0xbd;
@@ -145,7 +145,7 @@ int32_t psa_hash_finish_inactive_operation_handle(caller_security_t caller)
     return VAL_STATUS_SUCCESS;
 }
 
-int32_t psa_hash_finish_invalid_hash_buffer_size(caller_security_t caller)
+int32_t psa_hash_finish_invalid_hash_buffer_size(caller_security_t caller __UNUSED)
 {
     psa_hash_operation_t    operation;
     char                    input = 0xbd;

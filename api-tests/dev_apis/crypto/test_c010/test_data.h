@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,10 +25,9 @@ typedef struct {
     psa_algorithm_t         key_alg;
     psa_key_id_t            key_id;
     psa_key_lifetime_t      key_lifetime;
-    psa_key_lifetime_t      lifetime;
 } test_data;
 
-static test_data check1[] = {
+static const test_data check1[] = {
 {"Test set/get key attributes\n", PSA_KEY_TYPE_AES, BYTES_TO_BITS(AES_16B_KEY_SIZE),
  PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT, PSA_ALG_CCM, 0x1234,
  PSA_KEY_LIFETIME_PERSISTENT

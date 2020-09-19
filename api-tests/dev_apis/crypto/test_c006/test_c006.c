@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@
 #include "test_data.h"
 #include "val_crypto.h"
 
-client_test_t test_c006_crypto_list[] = {
+const client_test_t test_c006_crypto_list[] = {
     NULL,
     psa_hash_compute_test,
     NULL,
@@ -29,13 +29,13 @@ client_test_t test_c006_crypto_list[] = {
 
 static int g_test_count = 1;
 
-int32_t psa_hash_compute_test(caller_security_t caller)
+int32_t psa_hash_compute_test(caller_security_t caller __UNUSED)
 {
     int                     num_checks = sizeof(check1)/sizeof(check1[0]);
     int32_t                 i, status;
     const char              *expected_hash;
     char                    hash[HASH_64B];
-    size_t                  hash_length, hash_size = sizeof(hash);
+    size_t                  hash_length;
 
     if (num_checks == 0)
     {
@@ -65,7 +65,7 @@ int32_t psa_hash_compute_test(caller_security_t caller)
 
         /* Calculate the hash (digest) of a message */
         status = val->crypto_function(VAL_CRYPTO_HASH_COMPUTE, check1[i].alg, &check1[i].input,
-                 check1[i].input_length, hash, hash_size, &hash_length);
+                 check1[i].input_length, hash, check1[i].hash_length, &hash_length);
         TEST_ASSERT_EQUAL(status, check1[i].expected_status, TEST_CHECKPOINT_NUM(3));
 
         if (check1[i].expected_status != PSA_SUCCESS)

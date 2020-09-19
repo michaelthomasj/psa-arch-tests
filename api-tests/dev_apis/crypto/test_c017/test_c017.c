@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@
 #include "test_data.h"
 #include "val_crypto.h"
 
-client_test_t test_c017_crypto_list[] = {
+const client_test_t test_c017_crypto_list[] = {
     NULL,
     psa_generate_random_test,
     NULL,
@@ -30,10 +30,10 @@ client_test_t test_c017_crypto_list[] = {
 static int     g_test_count = 1;
 static uint8_t data[BUFFER_SIZE], changed[BUFFER_SIZE];
 
-int32_t psa_generate_random_test(caller_security_t caller)
+int32_t psa_generate_random_test(caller_security_t caller __UNUSED)
 {
-    int         num_checks = sizeof(check1)/sizeof(check1[0]);
-    uint32_t    i, j, run;
+    int         i, num_checks = sizeof(check1)/sizeof(check1[0]);
+    uint32_t    j, run;
     uint8_t     trail[] = "don't overwrite me";
     int32_t     status;
 

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@
 #include "test_data.h"
 #include "val_crypto.h"
 
-client_test_t test_c011_crypto_list[] = {
+const client_test_t test_c011_crypto_list[] = {
     NULL,
     psa_hash_setup_test,
     NULL,
@@ -29,7 +29,7 @@ client_test_t test_c011_crypto_list[] = {
 
 static int g_test_count = 1;
 
-int32_t psa_hash_setup_test(caller_security_t caller)
+int32_t psa_hash_setup_test(caller_security_t caller __UNUSED)
 {
     int                     num_checks = sizeof(check1)/sizeof(check1[0]);
     int32_t                 i, status;
