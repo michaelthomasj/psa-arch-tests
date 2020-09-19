@@ -12,10 +12,10 @@ void sci_uart_tei_isr(void);
 void sci_uart_eri_isr(void);
 
 /* Vector table allocations */
-#define VECTOR_NUMBER_SCI0_RXI ((IRQn_Type) 0) /* SCI0 RXI (Receive data full) */
-#define VECTOR_NUMBER_SCI0_TXI ((IRQn_Type) 1) /* SCI0 TXI (Transmit data empty) */
-#define VECTOR_NUMBER_SCI0_TEI ((IRQn_Type) 2) /* SCI0 TEI (Transmit end) */
-#define VECTOR_NUMBER_SCI0_ERI ((IRQn_Type) 3) /* SCI0 ERI (Receive error) */
+#define VECTOR_NUMBER_SCI0_RXI ((IRQn_Type) 4) /* SCI0 RXI (Receive data full) */
+#define VECTOR_NUMBER_SCI0_TXI ((IRQn_Type) 5) /* SCI0 TXI (Transmit data empty) */
+#define VECTOR_NUMBER_SCI0_TEI ((IRQn_Type) 6) /* SCI0 TEI (Transmit end) */
+#define VECTOR_NUMBER_SCI0_ERI ((IRQn_Type) 7) /* SCI0 ERI (Receive error) */
 typedef enum IRQn
 {
     Reset_IRQn = -15,
@@ -28,9 +28,9 @@ typedef enum IRQn
     DebugMonitor_IRQn = -4,
     PendSV_IRQn = -2,
     SysTick_IRQn = -1,
-    SCI0_RXI_IRQn = 0, /* SCI0 RXI (Receive data full) */
-    SCI0_TXI_IRQn = 1, /* SCI0 TXI (Transmit data empty) */
-    SCI0_TEI_IRQn = 2, /* SCI0 TEI (Transmit end) */
-    SCI0_ERI_IRQn = 3, /* SCI0 ERI (Receive error) */
+    SCI0_RXI_IRQn = 4, /* SCI0 RXI (Receive data full) */
+    SCI0_TXI_IRQn = 5, /* SCI0 TXI (Transmit data empty) */
+    SCI0_TEI_IRQn = 6, /* SCI0 TEI (Transmit end) */
+    SCI0_ERI_IRQn = 7, /* SCI0 ERI (Receive error) */
 } IRQn_Type;
 #endif /* VECTOR_DATA_H */
