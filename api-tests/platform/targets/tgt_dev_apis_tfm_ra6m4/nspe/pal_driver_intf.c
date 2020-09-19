@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +20,8 @@
 #include "pal_nvmem.h"
 #include "pal_wd_cmsdk.h"
 
+int32_t tfm_platform_system_reset(void);
+
 /**
     @brief    - This function initializes the UART
     @param    - uart base addr
@@ -27,7 +29,7 @@
 **/
 int pal_uart_init_ns(uint32_t uart_base_addr)
 {
-    pal_uart_ra6m4_init(uart_base_addr);
+	pal_uart_ra6m4_init(uart_base_addr);
     return PAL_STATUS_SUCCESS;
 }
 
@@ -38,9 +40,9 @@ int pal_uart_init_ns(uint32_t uart_base_addr)
     @return   - SUCCESS/FAILURE
 **/
 
-int pal_print_ns(char *str, int32_t data)
+int pal_print_ns(const char *str, int32_t data)
 {
-    pal_ra6m4_print(str, data);
+	pal_ra6m4_print(str, data);
     return PAL_STATUS_SUCCESS;
 }
 
@@ -117,18 +119,6 @@ int pal_nvmem_write_ns(addr_t base, uint32_t offset, void *buffer, int size)
 }
 
 /**
- *   @brief    - This function will read peripherals using SPI commands
- *   @param    - addr : address of the peripheral
- *               data : read buffer
- *               len  : length of the read buffer in bytes
- *   @return   - error status
-**/
-int pal_spi_read(addr_t addr, uint8_t *data, uint32_t len)
-{
-    return 0xFF;
-}
-
-/**
  *   @brief    - Terminates the simulation at the end of all tests completion.
  *               By default, it put cpus into power down mode.
  *   @param    - void
@@ -142,4 +132,14 @@ void pal_terminate_simulation(void)
     {
         asm volatile("WFI");
     }
+}
+
+/**
+ *   @brief    - Resets the system.
+ *   @param    - void
+ *   @return   - SUCCESS/FAILURE
+**/
+int pal_system_reset(void)
+{
+    return tfm_platform_system_reset();
 }

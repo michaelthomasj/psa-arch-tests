@@ -18,6 +18,10 @@
 #ifndef _PAL_CONFIG_H_
 #define _PAL_CONFIG_H_
 
+#include "pal_crypto_config.h"
+#include "pal_attestation_config.h"
+#include "pal_storage_config.h"
+
 /* Define PSA test suite dependent macros for non-cmake build */
 #if !defined(PSA_CMAKE_BUILD)
 
@@ -29,9 +33,6 @@
 
 /* NSPE or SPE TEST build? */
 #define NONSECURE_TEST_BUILD
-
-/* Combine test archive or binary? */
-#define TEST_COMBINE_ARCHIVE
 
 /* If not defined, skip watchdog programming */
 #define WATCHDOG_AVAILABLE
@@ -48,9 +49,6 @@
 
 /* Use hardcoded public key */
 //#define PLATFORM_OVERRIDE_ATTEST_PK
-
-/* Platform specific max UID's size */
-#define PLATFORM_MAX_UID_SIZE 512
 
 /*
  * Include of PSA defined Header files
@@ -79,12 +77,12 @@
 #include "psa/crypto.h"
 #endif
 
-#ifdef INTERNAL_TRUSTED_STORAGE
+#if defined(INTERNAL_TRUSTED_STORAGE) || defined(STORAGE)
 /* psa/internal_trusted_storage.h: Contains the PSA ITS API elements */
 #include "psa/internal_trusted_storage.h"
 #endif
 
-#ifdef PROTECTED_STORAGE
+#if defined(PROTECTED_STORAGE) || defined(STORAGE)
 /* psa/protected_storage.h: Contains the PSA PS API elements */
 #include "psa/protected_storage.h"
 #endif

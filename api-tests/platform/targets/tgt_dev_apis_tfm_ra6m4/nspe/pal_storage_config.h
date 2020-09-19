@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,16 +15,10 @@
  * limitations under the License.
 **/
 
-#include <stdarg.h>
-#include "pal_common.h"
+#ifndef _PAL_STORAGE_CONFIG_H_
+#define _PAL_STORAGE_CONFIG_H_
 
-/**
-    @brief    - This API will call the requested internal trusted storage function
-    @param    - type    : function code
-                valist  : variable argument list
-    @return   - error status
-**/
-uint32_t pal_its_function(int type, va_list valist)
-{
-    return PAL_STATUS_ERROR;
-}
+/* Platform specific max UID's size */
+#define ARCH_TEST_STORAGE_UID_MAX_SIZE 512
+
+#endif /* _PAL_STORAGE_CONFIG_H_ */

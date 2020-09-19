@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +15,42 @@
  * limitations under the License.
 **/
 
-#ifndef _PAL_ATTESTATION_CRYPTO_H_
-#define _PAL_ATTESTATION_CRYPTO_H_
+#ifndef _PAL_ATTESTATION_CONFIG_H_
+#define _PAL_ATTESTATION_CONFIG_H_
 
-#include "pal_attestation_eat.h"
+#define COSE_ALGORITHM_ES256             -7
+#define COSE_ALG_SHA256_PROPRIETARY      -72000
+
+#define USEFUL_BUF_MAKE_STACK_UB UsefulBuf_MAKE_STACK_UB
+
+#define COSE_SIG_CONTEXT_STRING_SIGNATURE1 "Signature1"
+
+/* Private value. Intentionally not documented for Doxygen.
+ * This is the size allocated for the encoded protected headers.  It
+ * needs to be big enough for make_protected_header() to succeed. It
+ * currently sized for one header with an algorithm ID up to 32 bits
+ * long -- one byte for the wrapping map, one byte for the label, 5
+ * bytes for the ID. If this is made accidentially too small, QCBOR will
+ * only return an error, and not overrun any buffers.
+ *
+ * 9 extra bytes are added, rounding it up to 16 total, in case some
+ * other protected header is to be added.
+ */
+#define T_COSE_SIGN1_MAX_PROT_HEADER (1+1+5+9)
+
+/**
+ * This is the size of the first part of the CBOR encoded TBS
+ * bytes. It is around 20 bytes. See create_tbs_hash().
+ */
+#define T_COSE_SIZE_OF_TBS \
+    1 + /* For opening the array */ \
+    sizeof(COSE_SIG_CONTEXT_STRING_SIGNATURE1) + /* "Signature1" */ \
+    2 + /* Overhead for encoding string */ \
+    T_COSE_SIGN1_MAX_PROT_HEADER + /* entire protected headers */ \
+    3 * (/* 3 NULL bstrs for fields not used */ \
+        1 /* size of a NULL bstr */  \
+    )
+#define NULL_USEFUL_BUF_C  NULLUsefulBufC
 
 #define ATTEST_PUBLIC_KEY_SLOT                  4
 #define ECC_CURVE_SECP256R1_PULBIC_KEY_LENGTH   (1 + 2 * PSA_BITS_TO_BYTES(256))
@@ -72,17 +104,4 @@ static const ecc_key_t attest_key = {
         sizeof(initial_attestation_public_y_key)
 };
 
-int32_t pal_cose_crypto_hash_start(psa_hash_operation_t *psa_hash, int32_t cose_hash_alg_id);
-void pal_cose_crypto_hash_update(psa_hash_operation_t *psa_hash,
-                                 struct q_useful_buf_c data_to_hash);
-int32_t pal_cose_crypto_hash_finish(psa_hash_operation_t *psa_hash,
-                                    struct q_useful_buf buffer_to_hold_result,
-                                    struct q_useful_buf_c *hash_result);
-int pal_create_sha256(struct q_useful_buf_c bytes_to_hash, struct q_useful_buf buffer_for_hash,
-                      struct q_useful_buf_c *hash);
-uint32_t pal_compute_hash(int32_t cose_alg_id, struct q_useful_buf buffer_for_hash,
-                          struct q_useful_buf_c *hash, struct q_useful_buf_c protected_headers,
-                          struct q_useful_buf_c payload);
-uint32_t pal_crypto_pub_key_verify(int32_t cose_algorithm_id, struct q_useful_buf_c token_hash,
-                                   struct q_useful_buf_c signature);
-#endif /* _PAL_ATTESTATION_CRYPTO_H_ */
+#endif /* _PAL_ATTESTATION_CONFIG_H_ */
