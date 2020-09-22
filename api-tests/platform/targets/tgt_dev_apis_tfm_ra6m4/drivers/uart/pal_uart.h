@@ -22,13 +22,20 @@
 #include "r_sci_uart.h"
 #include "r_ioport.h"
 
-
 void user_uart_callback(uart_callback_args_t *p_args);
+
+#define VECTOR_NUMBER_SCI0_RXI ((IRQn_Type) 17) /* SCI0 RXI (Receive data full) */
+#define VECTOR_NUMBER_SCI0_TXI ((IRQn_Type) 18) /* SCI0 TXI (Transmit data empty) */
+#define VECTOR_NUMBER_SCI0_TEI ((IRQn_Type) 19) /* SCI0 TEI (Transmit end) */
+#define VECTOR_NUMBER_SCI0_ERI ((IRQn_Type) 20) /* SCI0 ERI (Receive error) */
+
+volatile uint8_t tx_data_empty = 1;
+volatile uint8_t tx_irq_triggered = 0;
 
 
 /* function prototypes */
 void pal_uart_ra6m4_init(uint32_t uart_base_addr);
-void pal_ra6m4_print(char *str, int32_t data);
+void pal_ra6m4_print(const char *str, int32_t data);
 void pal_uart_ra6m4_generate_irq(void);
 void pal_uart_ra6m4_disable_irq(void);
 
