@@ -22,6 +22,8 @@
 #define ARG_UNUSED(arg)  (void)arg
 #endif
 
+static volatile uint8_t tx_data_empty_test = 1;
+static volatile uint8_t tx_irq_triggered_test = 0;
 
 static sci_uart_instance_ctrl_t g_uart0_ctrl;
 
@@ -113,7 +115,7 @@ void pal_uart_ra6m4_init(uint32_t uart_base_addr)
 static int pal_uart_ra6m4_is_tx_empty(void)
 {
     /* Note: Check for empty TX FIFO */
-    return ((tx_data_empty));
+    return ((tx_data_empty_test));
 }
 
 /**
@@ -126,7 +128,7 @@ void pal_uart_ra6m4_putc(uint8_t c)
     /* ensure TX buffer to be empty */
     /* write the data (upper 24 bits are reserved) */
     while (!pal_uart_ra6m4_is_tx_empty());
-    tx_data_empty = 0U;
+    tx_data_empty_test = 0U;
 
     R_SCI_UART_Write(g_uart0.p_ctrl, &c, bytes);
 	
@@ -204,7 +206,7 @@ void pal_ra6m4_print(const char *str, int32_t data)
 **/
 static int pal_uart_ra6m4_is_tx_irq_triggerd(void)
 {
-    return tx_irq_triggered;
+    return tx_irq_triggered_test;
 }
 
 /**
@@ -225,18 +227,18 @@ void pal_uart_ra6m4_generate_irq(void)
 **/
 void pal_uart_ra6m4_disable_irq(void)
 {
-    tx_irq_triggered = 0;
+    tx_irq_triggered_test = 0;
 }
 
 void user_uart_callback(uart_callback_args_t *p_args)
 {
     if(p_args->event == UART_EVENT_TX_DATA_EMPTY)
     {
-       tx_data_empty = 1U;
+       tx_data_empty_test = 1U;
     }
     if(p_args->event == UART_EVENT_TX_COMPLETE)
     {
-       tx_data_empty = 1U;
-       tx_irq_triggered = 1U;
+       tx_data_empty_test = 1U;
+       tx_irq_triggered_test = 1U;
     }
 }

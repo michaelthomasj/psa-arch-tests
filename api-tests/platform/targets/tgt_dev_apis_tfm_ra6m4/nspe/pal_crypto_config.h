@@ -37,7 +37,7 @@
 #define ARCH_TEST_RSA
 #define ARCH_TEST_RSA_1024
 #define ARCH_TEST_RSA_2048
-#define ARCH_TEST_RSA_3072
+//#define ARCH_TEST_RSA_3072
 
 /**
  * \def  ARCH_TEST_ECC
@@ -51,8 +51,8 @@
  * Comment macros to disable the curve
  */
 #define ARCH_TEST_ECC
-#define ARCH_TEST_ECC_CURVE_SECP192R1
-#define ARCH_TEST_ECC_CURVE_SECP224R1
+//#define ARCH_TEST_ECC_CURVE_SECP192R1
+//#define ARCH_TEST_ECC_CURVE_SECP224R1
 #define ARCH_TEST_ECC_CURVE_SECP256R1
 #define ARCH_TEST_ECC_CURVE_SECP384R1
 
@@ -66,9 +66,9 @@
  */
 #define ARCH_TEST_AES
 #define ARCH_TEST_AES_128
-#define ARCH_TEST_AES_192
+//#define ARCH_TEST_AES_192
 #define ARCH_TEST_AES_256
-#define ARCH_TEST_AES_512
+//#define ARCH_TEST_AES_512
 
 /**
  * \def  ARCH_TEST_DES
@@ -234,8 +234,8 @@
 //#define ARCH_TEST_SHA1
 #define ARCH_TEST_SHA224
 #define ARCH_TEST_SHA256
-#define ARCH_TEST_SHA384
-#define ARCH_TEST_SHA512
+//#define ARCH_TEST_SHA384
+//#define ARCH_TEST_SHA512
 //#define ARCH_TEST_SHA512_224
 //#define ARCH_TEST_SHA512_256
 //#define ARCH_TEST_SHA3_224
@@ -261,7 +261,7 @@
  *
  * Comment macros to disable the types
  */
-#define ARCH_TEST_CMAC
+//#define ARCH_TEST_CMAC
 //#define ARCH_TEST_GMAC
 #define ARCH_TEST_HMAC
 
@@ -272,7 +272,7 @@
  *
  * Requires: ARCH_TEST_AES
  */
-#define ARCH_TEST_CCM
+//#define ARCH_TEST_CCM
 
 /**
  * \def ARCH_TEST_GCM
@@ -282,7 +282,7 @@
  * Requires: ARCH_TEST_AES
  *
  */
-#define ARCH_TEST_GCM
+//#define ARCH_TEST_GCM
 
 /**
  * \def ARCH_TEST_TRUNCATED_MAC
@@ -316,7 +316,7 @@
  *
  * Enable deterministic ECDSA (RFC 6979).
 */
-#define ARCH_TEST_DETERMINISTIC_ECDSA
+//#define ARCH_TEST_DETERMINISTIC_ECDSA
 
 /**
  * \def ARCH_TEST_ECC_ASYMMETRIC_API_SUPPORT

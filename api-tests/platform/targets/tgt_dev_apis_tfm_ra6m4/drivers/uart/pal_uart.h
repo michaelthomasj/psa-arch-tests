@@ -29,9 +29,6 @@ void user_uart_callback(uart_callback_args_t *p_args);
 #define VECTOR_NUMBER_SCI0_TEI ((IRQn_Type) 19) /* SCI0 TEI (Transmit end) */
 #define VECTOR_NUMBER_SCI0_ERI ((IRQn_Type) 20) /* SCI0 ERI (Receive error) */
 
-volatile uint8_t tx_data_empty = 1;
-volatile uint8_t tx_irq_triggered = 0;
-
 
 /* function prototypes */
 void pal_uart_ra6m4_init(uint32_t uart_base_addr);

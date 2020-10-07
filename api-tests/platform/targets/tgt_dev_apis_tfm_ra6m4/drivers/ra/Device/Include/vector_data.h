@@ -22,9 +22,9 @@ typedef enum IRQn
     DebugMonitor_IRQn = -4,
     PendSV_IRQn = -2,
     SysTick_IRQn = -1,
-    SCI0_RXI_IRQn = 0, /* SCI0 RXI (Receive data full) */
-    SCI0_TXI_IRQn = 1, /* SCI0 TXI (Transmit data empty) */
-    SCI0_TEI_IRQn = 2, /* SCI0 TEI (Transmit end) */
-    SCI0_ERI_IRQn = 3, /* SCI0 ERI (Receive error) */
+    SCI0_RXI_IRQn = 17, /* SCI0 RXI (Receive data full) */
+    SCI0_TXI_IRQn = 18, /* SCI0 TXI (Transmit data empty) */
+    SCI0_TEI_IRQn = 19, /* SCI0 TEI (Transmit end) */
+    SCI0_ERI_IRQn = 20, /* SCI0 ERI (Receive error) */
 } IRQn_Type;
 #endif                                 /* VECTOR_DATA_H */

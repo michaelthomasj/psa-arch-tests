@@ -231,8 +231,8 @@ static uint32_t pal_import_attest_key(psa_algorithm_t key_alg)
         if (status != PSA_SUCCESS)
             return PAL_ATTEST_ERR_KEY_FAIL;
 
-        if (ecc_curve == USHRT_MAX)
-            return PAL_ATTEST_ERROR;
+//        if (ecc_curve == USHRT_MAX)
+//            return PAL_ATTEST_ERROR;
 
         /* Set key type for public key */
         attest_key_type = PSA_KEY_TYPE_ECC_PUBLIC_KEY(ecc_curve);
@@ -272,8 +272,8 @@ static uint32_t pal_import_attest_key(psa_algorithm_t key_alg)
         if (status != PSA_SUCCESS)
             return PAL_ATTEST_ERR_KEY_FAIL;
 
-        if (ecc_curve == USHRT_MAX)
-            return PAL_ATTEST_ERROR;
+//        if (ecc_curve == USHRT_MAX)
+//            return PAL_ATTEST_ERROR;
 
         /* Set key type for public key */
         attest_key_type = PSA_KEY_TYPE_ECC_PUBLIC_KEY(ecc_curve);
