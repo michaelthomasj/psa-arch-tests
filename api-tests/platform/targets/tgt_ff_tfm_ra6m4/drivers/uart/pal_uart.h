@@ -28,7 +28,7 @@ void pal_user_uart_callback(uart_callback_args_t *p_args);
 
 /* function prototypes */
 void pal_uart_ra6m4_init(uint32_t uart_base_addr);
-void pal_ra6m4_print(char *str, int32_t data);
+void pal_ra6m4_print(const char *str, int32_t data);
 void pal_uart_ra6m4_generate_irq(void);
 void pal_uart_ra6m4_disable_irq(void);
 
