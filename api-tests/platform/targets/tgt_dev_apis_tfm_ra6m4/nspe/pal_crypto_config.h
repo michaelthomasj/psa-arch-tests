@@ -35,9 +35,9 @@
  * Comment macros to disable the types
  */
 #define ARCH_TEST_RSA
-#define ARCH_TEST_RSA_1024
+//#define ARCH_TEST_RSA_1024
 #define ARCH_TEST_RSA_2048
-//#define ARCH_TEST_RSA_3072
+#define ARCH_TEST_RSA_3072
 
 /**
  * \def  ARCH_TEST_ECC
@@ -181,7 +181,7 @@
 #define ARCH_TEST_RSA_PKCS1V15_SIGN
 #define ARCH_TEST_RSA_PKCS1V15_SIGN_RAW
 #define ARCH_TEST_RSA_PKCS1V15_CRYPT
-#define ARCH_TEST_RSA_OAEP
+//#define ARCH_TEST_RSA_OAEP
 
 /**
  * \def ARCH_TEST_CBC_PKCS7
@@ -261,7 +261,7 @@
  *
  * Comment macros to disable the types
  */
-//#define ARCH_TEST_CMAC
+#define ARCH_TEST_CMAC
 //#define ARCH_TEST_GMAC
 #define ARCH_TEST_HMAC
 
@@ -272,7 +272,7 @@
  *
  * Requires: ARCH_TEST_AES
  */
-//#define ARCH_TEST_CCM
+#define ARCH_TEST_CCM
 
 /**
  * \def ARCH_TEST_GCM
@@ -282,7 +282,7 @@
  * Requires: ARCH_TEST_AES
  *
  */
-//#define ARCH_TEST_GCM
+#define ARCH_TEST_GCM
 
 /**
  * \def ARCH_TEST_TRUNCATED_MAC

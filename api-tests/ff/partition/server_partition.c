@@ -19,6 +19,7 @@
 
 val_api_t *val_server_sp = &val_api;
 psa_api_t *psa_server_sp = &psa_api;
+psa_msg_t       msg_server = {0};
 
 void server_main(void)
 {
@@ -26,7 +27,7 @@ void server_main(void)
     int32_t         test_status;
     psa_signal_t    signals = 0;
     val_status_t    status;
-    psa_msg_t       msg = {0};
+    //psa_msg_t       msg = {0};
     server_test_t   *test_list;
 
     while (1)
@@ -36,36 +37,36 @@ void server_main(void)
 
         if (signals & SERVER_TEST_DISPATCHER_SIGNAL)
         {
-            psa_get(SERVER_TEST_DISPATCHER_SIGNAL, &msg);
-            switch (msg.type)
+            psa_get(SERVER_TEST_DISPATCHER_SIGNAL, &msg_server);
+            switch (msg_server.type)
             {
                 case PSA_IPC_CONNECT:
                     if (test_data != 0)
                     {
                         val_print(PRINT_ERROR, "must clear previous dispatcher connection\n", 0);
-                        psa_reply(msg.handle, PSA_ERROR_CONNECTION_REFUSED);
+                        psa_reply(msg_server.handle, PSA_ERROR_CONNECTION_REFUSED);
                     }
                     else
                     {
-                        psa_reply(msg.handle, PSA_SUCCESS);
+                        psa_reply(msg_server.handle, PSA_SUCCESS);
                     }
                     break;
                 case PSA_IPC_CALL:
-                    if ((msg.in_size[0] <= sizeof(test_data)) &&
-                        (psa_read(msg.handle, 0, &test_data, msg.in_size[0]) != sizeof(test_data)))
+                    if ((msg_server.in_size[0] <= sizeof(test_data)) &&
+                        (psa_read(msg_server.handle, 0, &test_data, msg_server.in_size[0]) != sizeof(test_data)))
                     {
                         val_print(PRINT_ERROR, "could not read dispatcher payload\n", 0);
                         status = VAL_STATUS_READ_FAILED;
                     }
                     if (VAL_ERROR(status))
                     {
-                        psa_reply(msg.handle, PSA_ERROR_CONNECTION_REFUSED);
+                        psa_reply(msg_server.handle, PSA_ERROR_CONNECTION_REFUSED);
                         break;
                     }
 
                     if (GET_ACTION_NUM(test_data) == TEST_EXECUTE_FUNC)
                     {
-                        psa_reply(msg.handle, PSA_SUCCESS);
+                        psa_reply(msg_server.handle, PSA_SUCCESS);
                         val_print(PRINT_INFO,"\tSERVER TEST FUNC START %d\n",
                                                     GET_BLOCK_NUM(test_data));
 
@@ -78,22 +79,22 @@ void server_main(void)
                     else if (GET_ACTION_NUM(test_data) == TEST_RETURN_RESULT)
                     {
                         val_print(PRINT_INFO,"\tSERVER TEST FUNC END\n", 0);
-                        psa_write(msg.handle, 0, &test_status, msg.out_size[0]);
-                        psa_reply(msg.handle, PSA_SUCCESS);
+                        psa_write(msg_server.handle, 0, &test_status, msg_server.out_size[0]);
+                        psa_reply(msg_server.handle, PSA_SUCCESS);
                     }
                     else
                     {
-                        psa_reply(msg.handle, PSA_ERROR_CONNECTION_REFUSED);
+                        psa_reply(msg_server.handle, PSA_ERROR_CONNECTION_REFUSED);
                     }
                     break;
                 case PSA_IPC_DISCONNECT:
                     test_data=0;
                     status=0;
                     test_status=0;
-                    psa_reply(msg.handle, PSA_SUCCESS);
+                    psa_reply(msg_server.handle, PSA_SUCCESS);
                     break;
                 default:
-                    val_print(PRINT_ERROR, "Unexpected message type %d!", (int)(msg.type));
+                    val_print(PRINT_ERROR, "Unexpected message type %d!", (int)(msg_server.type));
                     TEST_PANIC();
             }
         }
