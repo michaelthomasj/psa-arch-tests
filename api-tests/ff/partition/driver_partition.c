@@ -656,7 +656,7 @@ void driver_test_isolation_psa_rot_mmio_rd(psa_msg_t *msg)
     }
 
     /* Send PSA RoT mmio address */
-    memset((uint8_t *)&psa_rot_mmio_addr, (uint8_t)DATA_VALUE, sizeof(addr_t));
+    memset((uint8_t *)psa_rot_mmio_addr, (uint8_t)DATA_VALUE, sizeof(addr_t));
     psa_write(msg->handle, 0, (void *) &psa_rot_mmio_addr, sizeof(addr_t));
     psa_reply(msg->handle, PSA_SUCCESS);
 }
@@ -672,7 +672,7 @@ void driver_test_isolation_psa_rot_mmio_wr(psa_msg_t *msg)
     }
 
     /* Send PSA RoT mmio address */
-    memset((uint8_t *)&psa_rot_mmio_addr, (uint8_t)DATA_VALUE, sizeof(addr_t));
+    memset((uint8_t *)psa_rot_mmio_addr, (uint8_t)DATA_VALUE, sizeof(addr_t));
     psa_write(msg->handle, 0, (void *) &psa_rot_mmio_addr, sizeof(addr_t));
     psa_reply(msg->handle, PSA_SUCCESS);
 

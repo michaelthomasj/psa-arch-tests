@@ -18,11 +18,10 @@
 #include "pal_uart.h"
 #include "platform_base_address.h"
 #include "G:\TFM\peaks\ra\arm\trusted-firmware-m\platform\ext\driver\Driver_USART.h"
-extern ARM_DRIVER_USART Driver_USART1;
+extern ARM_DRIVER_USART Driver_USART;
 extern ARM_DRIVER_USART Driver_USART_IRQ;
 
-volatile uint8_t tx_irq_triggered = 0;
-volatile uint8_t tx_irq_triggered_irq = 0;
+extern volatile uint8_t tx_irq_triggered_irq;
 
 /**
     @brief    - This function initializes the UART
@@ -31,7 +30,7 @@ volatile uint8_t tx_irq_triggered_irq = 0;
 void pal_uart_ra6m4_init(uint32_t uart_base_addr)
 {
     (void)(uart_base_addr);
-	Driver_USART1.Initialize(NULL);
+	Driver_USART.Initialize(NULL);
     Driver_USART_IRQ.Initialize(NULL);
 
 }
@@ -43,12 +42,8 @@ static void pal_uart_ra6m4_putc(const uint8_t c)
 {
     uint32_t bytes = 1U;
     
-    Driver_USART1.Send(&c, bytes);
+    Driver_USART.Send(&c, bytes);
 
-    if (c == '\n')
-    {
-        pal_uart_ra6m4_putc('\r');
-    }
 }
 
 /**
@@ -140,6 +135,6 @@ void pal_uart_ra6m4_generate_irq(void)
 **/
 void pal_uart_ra6m4_disable_irq(void)
 {
-	tx_irq_triggered_irq = 0;
+	tx_irq_triggered_irq = 0U;
 }
 
