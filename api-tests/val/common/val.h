@@ -111,7 +111,7 @@
 #define TEST_RETURN_RESULT              2
 #define INVALID_HANDLE                  0x1234DEAD
 
-#define VAL_NVMEM_BLOCK_SIZE           4
+#define VAL_NVMEM_BLOCK_SIZE           64
 #define VAL_NVMEM_OFFSET(nvmem_idx)    (nvmem_idx * VAL_NVMEM_BLOCK_SIZE)
 
 #define UART_INIT_SIGN  0xff
@@ -213,6 +213,7 @@ typedef enum {
      * re-enter the same test and continue executing the same check function
      */
     BOOT_EXPECTED_CONT_TEST_EXEC       = 0x7,
+    BOOT_FILL_DUMMY                    = 0xFFFFFFFF,
 } boot_state_t;
 
 typedef enum {

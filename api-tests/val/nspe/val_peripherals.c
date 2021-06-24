@@ -157,6 +157,7 @@ val_status_t val_wd_timer_disable(void)
 val_status_t val_wd_reprogram_timer(wd_timeout_type_t timeout_type)
 {
     val_status_t    status = VAL_STATUS_SUCCESS;
+    (void)(timeout_type); //Added snce it will throw error when WDT is disabled
 
 #ifdef WATCHDOG_AVAILABLE
     /* Disable watchdog Timer */
