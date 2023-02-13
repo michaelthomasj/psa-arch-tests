@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -122,7 +122,8 @@ val_status_t val_execute_non_secure_tests(uint32_t test_num, const client_test_t
     }
 
     if (boot.state == BOOT_NOT_EXPECTED || boot.state == BOOT_EXPECTED_REENTER_TEST
-        || boot.state == BOOT_EXPECTED_CONT_TEST_EXEC)
+        || boot.state == BOOT_EXPECTED_CONT_TEST_EXEC
+        || boot.state == BOOT_EXPECTED_ON_SECOND_CHECK)
     {
         while (tests_list[i] != NULL)
         {
@@ -131,10 +132,18 @@ val_status_t val_execute_non_secure_tests(uint32_t test_num, const client_test_t
              * consider previous run pass and jump to second test function
              * of the same test if available.
              */
+
             if ((boot.state ==  BOOT_EXPECTED_REENTER_TEST) && (i == 1))
             {
                 val_print(PRINT_DEBUG, "[Check 1] PASSED\n", 0);
                 i++;
+                continue;
+            }
+
+            if ((boot.state ==  BOOT_EXPECTED_ON_SECOND_CHECK) && (i == 1))
+            {
+                val_print(PRINT_DEBUG, "[Check 2] PASSED\n", 0);
+                i = i + 2 ;
                 continue;
             }
 
@@ -154,8 +163,14 @@ val_status_t val_execute_non_secure_tests(uint32_t test_num, const client_test_t
             {
                 /* Handshake with server tests */
                 test_info.block_num = i;
+#if STATELESS_ROT == 1
+                status = val_execute_secure_test_func(&handle, test_info,
+                                                                SERVER_TEST_DISPATCHER_HANDLE);
+                handle = (int32_t)SERVER_TEST_DISPATCHER_HANDLE;
+#else
                 status = val_execute_secure_test_func(&handle, test_info,
                                                 SERVER_TEST_DISPATCHER_SID);
+#endif
                 if (VAL_ERROR(status))
                 {
                     val_set_status(RESULT_FAIL(status));
@@ -168,6 +183,8 @@ val_status_t val_execute_non_secure_tests(uint32_t test_num, const client_test_t
                 }
             }
 #endif
+            /* keep track of the test block numbers, helps when the panic happened */
+        	status = val_set_test_data(NV_TEST_DATA2, i);
             /* Execute client tests */
             test_status = tests_list[i](CALLER_NONSECURE);
 #ifdef IPC
@@ -251,38 +268,90 @@ val_status_t val_switch_to_secure_client(uint32_t test_num)
             val_print(PRINT_DEBUG, "[Check 1] PASSED\n", 0);
        }
 
+       if (boot.state ==  BOOT_EXPECTED_ON_SECOND_CHECK)
+       {
+            test_info.block_num = test_info.block_num + 2;
+            val_print(PRINT_DEBUG, "[Check 2] PASSED\n", 0);
+       }
        status = val_set_boot_flag(BOOT_NOT_EXPECTED);
        if (VAL_ERROR(status))
        {
-           goto exit;
+   	   goto exit;
        }
 
        /* switch to secure client */
-       status = val_execute_secure_test_func(&handle, test_info, CLIENT_TEST_DISPATCHER_SID);
-       if (VAL_ERROR(status))
-       {
-           goto exit;
-       }
+   #if STATELESS_ROT == 1
+      status = val_execute_secure_test_func(&handle, test_info, CLIENT_TEST_DISPATCHER_HANDLE);
+      handle = (int32_t)CLIENT_TEST_DISPATCHER_HANDLE;
+   #else
+      status = val_execute_secure_test_func(&handle, test_info, CLIENT_TEST_DISPATCHER_SID);
+   #endif
+      if (VAL_ERROR(status))
+      {
+   	   goto exit;
+      }
 
-       /* Retrive secure client test status */
-       status = val_get_secure_test_result(&handle);
-       if (IS_TEST_SKIP(status))
-       {
-            val_set_status(status);
-            return status;
-       }
-       if (VAL_ERROR(status))
-       {
-           goto exit;
-       }
-       return status;
-   }
-   else
-   {
-       /* If we are here means, we are in third run of this test */
-       val_print(PRINT_DEBUG, "[Check 1] PASSED\n", 0);
-       return VAL_STATUS_SUCCESS;
-   }
+      /* Retrive secure client test status */
+      status = val_get_secure_test_result(&handle);
+      if (IS_TEST_SKIP(status))
+      {
+   		val_set_status(status);
+   		return status;
+      }
+      if (VAL_ERROR(status))
+      {
+   	   goto exit;
+      }
+      return status;
+    }
+    else if (boot.state == BOOT_EXPECTED_S)
+    {
+	   int32_t test_data = 0;
+	   status = val_get_test_data(NV_TEST_DATA1, &test_data);
+	   if (VAL_ERROR(status))
+	   {
+		   return VAL_STATUS_ERROR;
+	   }
+	   test_info.block_num = test_data + 1;
+	   val_print(PRINT_DEBUG, "[Check %d] PASSED\n", test_data);
+	   status = val_set_boot_flag(BOOT_NOT_EXPECTED);
+	   if (VAL_ERROR(status))
+	   {
+		   goto exit;
+	   }
+
+
+	   /* switch to secure client */
+	#if STATELESS_ROT == 1
+	   status = val_execute_secure_test_func(&handle, test_info, CLIENT_TEST_DISPATCHER_HANDLE);
+	   handle = (int32_t)CLIENT_TEST_DISPATCHER_HANDLE;
+	#else
+	   status = val_execute_secure_test_func(&handle, test_info, CLIENT_TEST_DISPATCHER_SID);
+	#endif
+	   if (VAL_ERROR(status))
+	   {
+		   goto exit;
+	   }
+
+	   /* Retrive secure client test status */
+	   status = val_get_secure_test_result(&handle);
+	   if (IS_TEST_SKIP(status))
+	   {
+			val_set_status(status);
+			return status;
+	   }
+	   if (VAL_ERROR(status))
+	   {
+		   goto exit;
+	   }
+	   return status;
+    }
+    else
+    {
+        /* If we are here means, we are in third run of this test */
+        val_print(PRINT_DEBUG, "[Check 1] PASSED\n", 0);
+        return VAL_STATUS_SUCCESS;
+    }
 
 exit:
    val_set_status(RESULT_FAIL(status));
@@ -299,12 +368,25 @@ exit:
     @param    - sid        : RoT service to be connected. Partition dispatcher sid
     @return   - val_status_t
 **/
-val_status_t val_execute_secure_test_func(psa_handle_t *handle, test_info_t test_info, uint32_t sid)
+val_status_t val_execute_secure_test_func(__attribute__((unused)) psa_handle_t *handle,
+		                                           test_info_t test_info, uint32_t sid)
 {
     uint32_t        test_data;
     val_status_t    status = VAL_STATUS_SUCCESS;
     psa_status_t    status_of_call = PSA_SUCCESS;
+#if STATELESS_ROT == 1
+    test_data = ((uint32_t)(test_info.test_num) | ((uint32_t)(test_info.block_num) << BLOCK_NUM_POS)
+                        | ((uint32_t)(TEST_EXECUTE_FUNC) << ACTION_POS));
+    psa_invec data[1] = { {&test_data, sizeof(test_data)} };
 
+    status_of_call = psa_call(sid, 0, data, 1, NULL, 0);
+    if (status_of_call != PSA_SUCCESS)
+    {
+    	status = VAL_STATUS_CALL_FAILED;
+        val_print(PRINT_ERROR, "Call to dispatch SF failed. Status=%x\n", status_of_call);
+    }
+    return status;
+#else
     *handle = psa_connect(sid, 1);
     if (*handle > 0)
     {
@@ -327,6 +409,7 @@ val_status_t val_execute_secure_test_func(psa_handle_t *handle, test_info_t test
     }
 
     return status;
+#endif
 }
 
 /**
@@ -352,8 +435,9 @@ val_status_t val_get_secure_test_result(psa_handle_t *handle)
         status = VAL_STATUS_CALL_FAILED;
         val_print(PRINT_ERROR, "Call to dispatch SF failed. Status=%x\n", status_of_call);
     }
-
+#if STATELESS_ROT != 1
     psa_close(*handle);
+#endif
     return status;
 }
 #endif
@@ -563,7 +647,8 @@ val_status_t val_get_last_run_test_id(test_id_t *test_id)
                                     BOOT_EXPECTED_S,
                                     BOOT_EXPECTED_BUT_FAILED,
                                     BOOT_EXPECTED_REENTER_TEST,
-                                    BOOT_EXPECTED_CONT_TEST_EXEC
+                                    BOOT_EXPECTED_CONT_TEST_EXEC,
+                                    BOOT_EXPECTED_ON_SECOND_CHECK
                                     };
 
     status = val_get_boot_flag(&boot.state);
@@ -665,3 +750,44 @@ val_status_t val_get_boot_flag(boot_state_t *state)
    *state = boot.state;
    return status;
 }
+
+/**
+    @brief    - This function sets the test specific data
+                NVMEM location
+    @param    - nvm index
+    @param    - nvm testdata
+    @return   - val_status_t
+**/
+val_status_t val_set_test_data(int32_t nvm_index, int32_t test_data)
+{
+   val_status_t     status;
+
+   status = val_nvmem_write(VAL_NVMEM_OFFSET(nvm_index), &test_data, sizeof(int32_t));
+   if (VAL_ERROR(status))
+   {
+       val_print(PRINT_ERROR, "\tval_nvmem_write failed for test data. Error=0x%x\n", status);
+       return status;
+   }
+   return status;
+}
+
+/**
+    @brief    - This function gets the test specific data
+                NVMEM location
+    @param    - nvm index
+    @param    - nvm testdata
+    @return   - val_status_t
+**/
+val_status_t val_get_test_data(int32_t nvm_index, int32_t *test_data)
+{
+   val_status_t     status;
+
+   status = val_nvmem_read(VAL_NVMEM_OFFSET(nvm_index), test_data, sizeof(int32_t));
+   if (VAL_ERROR(status))
+   {
+       val_print(PRINT_ERROR, "\tval_nvmem_read failed for test data. Error=0x%x\n", status);
+       return status;
+   }
+   return status;
+}
+

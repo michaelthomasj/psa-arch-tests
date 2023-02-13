@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -184,7 +184,7 @@ int32_t client_test_psa_call_with_allowed_type_values(caller_security_t caller _
 {
    int32_t            status = VAL_STATUS_SUCCESS;
    psa_handle_t       handle = 0;
-   int32_t            type[] = {PSA_IPC_CALL, 1, 2, INT32_MAX};
+   int16_t            type[] = {PSA_IPC_CALL, 1, 2, INT16_MAX};
    uint32_t           i = 0;
 
    val->print(PRINT_TEST, "[Check 5] Test psa_call with different type values\n", 0);
@@ -258,6 +258,15 @@ int32_t client_test_spm_concurrent_connect_limit(caller_security_t caller __UNUS
    int             i= 0, signture = 0;
 
    val->print(PRINT_TEST, "[Check 7] Test connect limit\n", 0);
+
+   if (caller == CALLER_SECURE)
+   {
+	   status = val->set_boot_flag(BOOT_EXPECTED_S);
+	   if (VAL_ERROR(status))
+	   {
+		   return VAL_STATUS_ERROR;
+	   }
+   }
 
    /* Execute psa_connect in a loop until it returns
     * PSA_ERROR_CONNECTION_REFUSED OR PSA_ERROR_CONNECTION_BUSY

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2019, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,6 +54,7 @@ __UNUSED STATIC_DECLARE val_status_t val_get_secure_test_result(psa_handle_t *ha
 __UNUSED STATIC_DECLARE val_status_t val_err_check_set(uint32_t checkpoint, val_status_t status);
 __UNUSED STATIC_DECLARE val_status_t val_nvmem_write(uint32_t offset, void *buffer, int size);
 __UNUSED STATIC_DECLARE val_status_t val_set_boot_flag(boot_state_t state);
+__UNUSED STATIC_DECLARE val_status_t val_set_test_data(int32_t nvm_index, int32_t test_data);
 
 __UNUSED static val_api_t val_api = {
     .print                     = val_print,
@@ -64,6 +65,7 @@ __UNUSED static val_api_t val_api = {
     .ipc_call                  = val_ipc_call,
     .ipc_close                 = val_ipc_close,
     .set_boot_flag             = val_set_boot_flag,
+	.set_test_data             = val_set_test_data,
     .target_get_config         = val_target_get_config,
     .process_connect_request   = val_process_connect_request,
     .process_call_request      = val_process_call_request,
@@ -102,7 +104,7 @@ STATIC_DECLARE val_status_t val_print(print_verbosity_t verbosity, char *string,
 {
     int             string_len = 0;
     char            *p = string;
-    psa_handle_t    print_handle = 0;
+
     psa_status_t    status_of_call = PSA_SUCCESS;
     val_status_t    status = VAL_STATUS_SUCCESS;
     uart_fn_type_t  uart_fn = UART_PRINT;
@@ -117,8 +119,17 @@ STATIC_DECLARE val_status_t val_print(print_verbosity_t verbosity, char *string,
         string_len++;
         p++;
     }
-
     psa_invec data1[3] = {{&uart_fn, sizeof(uart_fn)}, {string, string_len+1}, {&data, sizeof(data)}};
+#if STATELESS_ROT == 1
+
+    status_of_call = psa_call(DRIVER_UART_HANDLE, 0, data1, 3, NULL, 0);
+    if (status_of_call != PSA_SUCCESS)
+    {
+    	status = VAL_STATUS_CALL_FAILED;
+    }
+    return status;
+#else
+    psa_handle_t    print_handle = 0;
     print_handle = psa_connect(DRIVER_UART_SID, DRIVER_UART_VERSION);
 
     if (PSA_HANDLE_IS_VALID(print_handle))
@@ -135,6 +146,7 @@ STATIC_DECLARE val_status_t val_print(print_verbosity_t verbosity, char *string,
     }
     psa_close(print_handle);
     return status;
+#endif
 }
 
 /**
@@ -332,7 +344,12 @@ STATIC_DECLARE val_status_t val_execute_secure_tests(test_info_t test_info, clie
 
         /* Handshake with server tests */
         test_info.block_num = i;
+#if STATELESS_ROT == 1
+        status = val_execute_secure_test_func(&handle, test_info, SERVER_TEST_DISPATCHER_HANDLE);
+        handle = (int32_t)SERVER_TEST_DISPATCHER_HANDLE;
+#else
         status = val_execute_secure_test_func(&handle, test_info, SERVER_TEST_DISPATCHER_SID);
+#endif
         if (VAL_ERROR(status))
         {
             val_print(PRINT_ERROR, "[Check %d] START\n", i);
@@ -342,7 +359,12 @@ STATIC_DECLARE val_status_t val_execute_secure_tests(test_info_t test_info, clie
         {
             val_print(PRINT_DEBUG, "[Check %d] START\n", i);
         }
-
+        /* keep track of the test block numbers, helps when the panic happened */
+    	status = val_set_test_data(NV_TEST_DATA1, i);
+    	if (VAL_ERROR(status))
+    	{
+    	   return VAL_STATUS_ERROR;
+    	}
         /* Execute client tests */
         test_status = tests_list[i](CALLER_SECURE);
 
@@ -379,14 +401,26 @@ STATIC_DECLARE val_status_t val_execute_secure_tests(test_info_t test_info, clie
     @param    - sid        : RoT service to be connected. Partition dispatcher sid
     @return   - val_status_t
 **/
-STATIC_DECLARE val_status_t val_execute_secure_test_func(psa_handle_t *handle,
-                                                         test_info_t test_info,
-                                                         uint32_t sid)
+STATIC_DECLARE val_status_t val_execute_secure_test_func
+               (__attribute__((unused)) psa_handle_t *handle, test_info_t test_info, uint32_t sid)
 {
     uint32_t        test_data;
     val_status_t    status = VAL_STATUS_SUCCESS;
     psa_status_t    status_of_call = PSA_SUCCESS;
+#if STATELESS_ROT == 1
+    test_data = ((uint32_t)(test_info.test_num) | ((uint32_t)(test_info.block_num) << BLOCK_NUM_POS)
+                    | ((uint32_t)(TEST_EXECUTE_FUNC) << ACTION_POS));
+    psa_invec data[1] = { {&test_data, sizeof(test_data)} };
 
+    status_of_call = psa_call(sid, 0, data, 1, NULL, 0);
+
+    if (status_of_call != PSA_SUCCESS)
+    {
+    	status = VAL_STATUS_CALL_FAILED;
+        val_print(PRINT_ERROR, "Call to dispatch SF failed. Status=%x\n", status_of_call);
+    }
+    return status;
+#else
     *handle = psa_connect(sid, 1);
 
     if (*handle < 0)
@@ -408,6 +442,7 @@ STATIC_DECLARE val_status_t val_execute_secure_test_func(psa_handle_t *handle,
         psa_close(*handle);
     }
     return status;
+#endif
 }
 
 /**
@@ -433,8 +468,9 @@ STATIC_DECLARE val_status_t val_get_secure_test_result(psa_handle_t *handle)
         status = VAL_STATUS_CALL_FAILED;
         val_print(PRINT_ERROR, "Call to dispatch SF failed. Status=%x\n", status_of_call);
     }
-
+#if STATELESS_ROT != 1
     psa_close(*handle);
+#endif
     return status;
 }
 
@@ -471,7 +507,7 @@ STATIC_DECLARE val_status_t val_err_check_set(uint32_t checkpoint, val_status_t 
 STATIC_DECLARE val_status_t val_nvmem_write(uint32_t offset, void *buffer, int size)
 {
    nvmem_param_t   nvmem_param;
-   psa_handle_t    handle = 0;
+
    psa_status_t    status_of_call = PSA_SUCCESS;
    val_status_t    status = VAL_STATUS_SUCCESS;
    memory_desc_t   *memory_desc;
@@ -491,6 +527,16 @@ STATIC_DECLARE val_status_t val_nvmem_write(uint32_t offset, void *buffer, int s
    nvmem_param.size = size;
    psa_invec invec[2] = {{&nvmem_param, sizeof(nvmem_param)}, {buffer, size}};
 
+#if STATELESS_ROT == 1
+   status_of_call = psa_call(DRIVER_NVMEM_HANDLE, 0, invec, 2, NULL, 0);
+   if (status_of_call != PSA_SUCCESS)
+   {
+	   return VAL_STATUS_CALL_FAILED;
+   }
+   return VAL_STATUS_SUCCESS;
+
+#else
+   psa_handle_t    handle = 0;
    handle = psa_connect(DRIVER_NVMEM_SID, DRIVER_NVMEM_VERSION);
    if (PSA_HANDLE_IS_VALID(handle))
    {
@@ -507,6 +553,7 @@ STATIC_DECLARE val_status_t val_nvmem_write(uint32_t offset, void *buffer, int s
    }
    psa_close(handle);
    return VAL_STATUS_SUCCESS;
+#endif
 }
 
 /**
@@ -529,4 +576,26 @@ STATIC_DECLARE val_status_t val_set_boot_flag(boot_state_t state)
    }
    return status;
 }
+
+/**
+    @brief    - This function sets the test specific data
+                NVMEM location
+    @param    - nvm index
+    @param    - nvm testdata
+    @return   - val_status_t
+**/
+STATIC_DECLARE val_status_t val_set_test_data(int32_t nvm_index, int32_t test_data)
+{
+   val_status_t     status;
+
+   status = val_nvmem_write(VAL_NVMEM_OFFSET(nvm_index), &test_data, sizeof(int32_t));
+   if (VAL_ERROR(status))
+   {
+       val_print(PRINT_ERROR, "\tval_nvmem_write failed for test data. Error=0x%x\n", status);
+       return status;
+   }
+   return status;
+}
+
+
 #endif

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2021, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +28,7 @@ const client_test_t test_c048_crypto_list[] = {
 
 extern  uint32_t g_test_count;
 
-static uint8_t    output[SIZE_32B];
+static uint8_t    output[64];
 
 int32_t psa_cipher_encrypt_test(caller_security_t caller __UNUSED)
 {
@@ -36,7 +36,7 @@ int32_t psa_cipher_encrypt_test(caller_security_t caller __UNUSED)
     int32_t                 i, status;
     size_t                  output_length;
     psa_key_attributes_t    attributes = PSA_KEY_ATTRIBUTES_INIT;
-    psa_key_handle_t        key_handle;
+    psa_key_id_t            key;
 
     if (num_checks == 0)
     {
@@ -64,17 +64,18 @@ int32_t psa_cipher_encrypt_test(caller_security_t caller __UNUSED)
 
         /* Import the key data into the key slot */
         status = val->crypto_function(VAL_CRYPTO_IMPORT_KEY, &attributes, check1[i].key_data,
-                 check1[i].key_length, &key_handle);
+                 check1[i].key_length, &key);
         TEST_ASSERT_EQUAL(status, PSA_SUCCESS, TEST_CHECKPOINT_NUM(3));
 
         /* Encrypt a message using a symmetric cipher */
-        status = val->crypto_function(VAL_CRYPTO_CIPHER_ENCRYPT, key_handle,
+        status = val->crypto_function(VAL_CRYPTO_CIPHER_ENCRYPT, key,
                  check1[i].key_alg, check1[i].input, check1[i].input_length, output,
                  check1[i].output_size, &output_length);
+
         TEST_ASSERT_EQUAL(status, check1[i].expected_status, TEST_CHECKPOINT_NUM(4));
 
         /* Destroy the key */
-        status = val->crypto_function(VAL_CRYPTO_DESTROY_KEY, key_handle);
+        status = val->crypto_function(VAL_CRYPTO_DESTROY_KEY, key);
         TEST_ASSERT_EQUAL(status, PSA_SUCCESS, TEST_CHECKPOINT_NUM(5));
 
         /* Reset the key attributes and check if psa_import_key fails */
@@ -86,17 +87,11 @@ int32_t psa_cipher_encrypt_test(caller_security_t caller __UNUSED)
         /* Check if the output length matches the expected length */
         TEST_ASSERT_EQUAL(output_length, check1[i].expected_output_length, TEST_CHECKPOINT_NUM(6));
 
-        /* Check if the output data matches the expected data */
-        TEST_ASSERT_MEMCMP(output, check1[i].expected_output, output_length,
-        TEST_CHECKPOINT_NUM(7));
-
         /* Encrypt a message using a symmetric cipher on an aborted key handle should be an error */
-        status = val->crypto_function(VAL_CRYPTO_CIPHER_ENCRYPT, key_handle,
+        status = val->crypto_function(VAL_CRYPTO_CIPHER_ENCRYPT, key,
                  check1[i].key_alg, check1[i].input, check1[i].input_length, output,
                  check1[i].output_size, &output_length);
-        TEST_ASSERT_EQUAL(status, PSA_ERROR_INVALID_HANDLE, TEST_CHECKPOINT_NUM(8));
-
+        TEST_ASSERT_EQUAL(status, PSA_ERROR_INVALID_HANDLE, TEST_CHECKPOINT_NUM(7));
     }
-
     return VAL_STATUS_SUCCESS;
 }

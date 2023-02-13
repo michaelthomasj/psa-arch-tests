@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,7 +34,7 @@ typedef struct {
     const uint8_t          *expected_ciphertext;
     size_t                  ciphertext_size;
     size_t                  expected_ciphertext_length;
-    psa_status_t            expected_status;
+    psa_status_t            expected_status[2];
 } test_data;
 
 static const test_data check1[] = {
@@ -57,7 +57,7 @@ static const test_data check1[] = {
     .expected_ciphertext        = aead_ciphertext_1,
     .ciphertext_size            = BUFFER_SIZE,
     .expected_ciphertext_length = AEAD_CIPHERTEXT_LEN_1,
-    .expected_status            = PSA_SUCCESS
+    .expected_status            = {PSA_SUCCESS, PSA_SUCCESS}
 },
 
 {
@@ -77,7 +77,7 @@ static const test_data check1[] = {
     .expected_ciphertext        = aead_ciphertext_2,
     .ciphertext_size            = BUFFER_SIZE,
     .expected_ciphertext_length = AEAD_CIPHERTEXT_LEN_2,
-    .expected_status            = PSA_SUCCESS
+    .expected_status            = {PSA_SUCCESS, PSA_SUCCESS}
 },
 
 {
@@ -86,7 +86,7 @@ static const test_data check1[] = {
     .data                       = key_data,
     .data_length                = AES_16B_KEY_SIZE,
     .usage_flags                = PSA_KEY_USAGE_ENCRYPT,
-    .alg                        = PSA_ALG_AEAD_WITH_TAG_LENGTH(PSA_ALG_CCM, 4),
+    .alg                        = PSA_ALG_AEAD_WITH_SHORTENED_TAG(PSA_ALG_CCM, 4),
     .nonce                      = nonce,
     .nonce_length               = 13,
     .additional_data            = additional_data,
@@ -97,7 +97,7 @@ static const test_data check1[] = {
     .expected_ciphertext        = aead_ciphertext_3,
     .ciphertext_size            = BUFFER_SIZE,
     .expected_ciphertext_length = AEAD_CIPHERTEXT_LEN_3,
-    .expected_status            = PSA_SUCCESS
+    .expected_status            = {PSA_SUCCESS, PSA_SUCCESS}
 },
 
 {
@@ -117,7 +117,7 @@ static const test_data check1[] = {
     .expected_ciphertext        = aead_ciphertext_4,
     .ciphertext_size            = BUFFER_SIZE,
     .expected_ciphertext_length = AEAD_CIPHERTEXT_LEN_4,
-    .expected_status            = PSA_SUCCESS
+    .expected_status            = {PSA_SUCCESS, PSA_SUCCESS}
 },
 
 {
@@ -137,7 +137,7 @@ static const test_data check1[] = {
     .expected_ciphertext        = aead_ciphertext_5,
     .ciphertext_size            = BUFFER_SIZE,
     .expected_ciphertext_length = AEAD_CIPHERTEXT_LEN_5,
-    .expected_status            = PSA_SUCCESS
+    .expected_status            = {PSA_SUCCESS, PSA_SUCCESS}
 },
 #endif
 #endif
@@ -161,7 +161,7 @@ static const test_data check1[] = {
     .expected_ciphertext        = aead_ciphertext_6,
     .ciphertext_size            = BUFFER_SIZE,
     .expected_ciphertext_length = AEAD_CIPHERTEXT_LEN_6,
-    .expected_status            = PSA_SUCCESS
+    .expected_status            = {PSA_SUCCESS, PSA_SUCCESS}
 },
 #endif
 #endif
@@ -185,7 +185,7 @@ static const test_data check1[] = {
     .expected_ciphertext        = NULL,
     .ciphertext_size            = 0,
     .expected_ciphertext_length = 0,
-    .expected_status            = PSA_ERROR_NOT_SUPPORTED
+    .expected_status            = {PSA_ERROR_NOT_SUPPORTED, PSA_ERROR_INVALID_ARGUMENT}
 },
 
 {
@@ -205,7 +205,7 @@ static const test_data check1[] = {
     .expected_ciphertext        = NULL,
     .ciphertext_size            = 0,
     .expected_ciphertext_length = 0,
-    .expected_status            = PSA_ERROR_NOT_PERMITTED
+    .expected_status            = {PSA_ERROR_NOT_PERMITTED, PSA_ERROR_NOT_PERMITTED}
 },
 
 {
@@ -225,7 +225,7 @@ static const test_data check1[] = {
     .expected_ciphertext        = aead_ciphertext_2,
     .ciphertext_size            = AEAD_CIPHERTEXT_LEN_2-1,
     .expected_ciphertext_length = AEAD_CIPHERTEXT_LEN_2,
-    .expected_status            = PSA_ERROR_BUFFER_TOO_SMALL
+    .expected_status            = {PSA_ERROR_BUFFER_TOO_SMALL, PSA_ERROR_BUFFER_TOO_SMALL}
 },
 
 {
@@ -245,7 +245,7 @@ static const test_data check1[] = {
     .expected_ciphertext        = aead_ciphertext_2,
     .ciphertext_size            = BUFFER_SIZE,
     .expected_ciphertext_length = AEAD_CIPHERTEXT_LEN_2,
-    .expected_status            = PSA_ERROR_INVALID_ARGUMENT
+    .expected_status            = {PSA_ERROR_INVALID_ARGUMENT, PSA_ERROR_INVALID_ARGUMENT}
 },
 
 {
@@ -254,7 +254,7 @@ static const test_data check1[] = {
     .data                       = key_data,
     .data_length                = AES_16B_KEY_SIZE,
     .usage_flags                = PSA_KEY_USAGE_ENCRYPT,
-    .alg                        = PSA_ALG_AEAD_WITH_TAG_LENGTH(PSA_ALG_CCM, 0),
+    .alg                        = PSA_ALG_AEAD_WITH_SHORTENED_TAG(PSA_ALG_CCM, 0),
     .nonce                      = nonce,
     .nonce_length               = 13,
     .additional_data            = additional_data,
@@ -265,7 +265,7 @@ static const test_data check1[] = {
     .expected_ciphertext        = aead_ciphertext_2,
     .ciphertext_size            = BUFFER_SIZE,
     .expected_ciphertext_length = AEAD_CIPHERTEXT_LEN_2,
-    .expected_status            = PSA_ERROR_INVALID_ARGUMENT
+    .expected_status            = {PSA_ERROR_INVALID_ARGUMENT, PSA_ERROR_INVALID_ARGUMENT}
 },
 #endif
 #endif

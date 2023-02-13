@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -268,8 +268,10 @@
 #define ARCH_TEST_SHA256
 #ifndef TF_M_PROFILE_SMALL
 #ifndef TF_M_PROFILE_MEDIUM
+#ifdef CC312_LEGACY_DRIVER_API_ENABLED
 #define ARCH_TEST_SHA384
 #define ARCH_TEST_SHA512
+#endif
 #endif
 #endif
 //#define ARCH_TEST_SHA512_224
@@ -287,6 +289,15 @@
  * Requires: ARCH_TEST_HASH
 */
 #define ARCH_TEST_HKDF
+
+/**
+ * \def ARCH_TEST_TLS12_PRF
+ *
+ * Enable the TLS-1.2 PRF algorithm (RFC 5246).
+ *
+ * Requires: ARCH_TEST_HASH
+*/
+#define ARCH_TEST_TLS12_PRF
 
 /**
  * \def ARCH_TEST_xMAC
