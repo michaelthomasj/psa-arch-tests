@@ -59,5 +59,5 @@ elseif(${CPU_ARCH} STREQUAL armv8m_bl)
 endif()
 
 set(CMAKE_C_FLAGS          "${TARGET_SWITCH} -g -Wall -Werror -Wextra -fdata-sections -ffunction-sections -mno-unaligned-access")
-set(CMAKE_ASM_FLAGS        "${TARGET_SWITCH} -mthumb")
+set(CMAKE_ASM_FLAGS        "${TARGET_SWITCH} -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16")
 set(CMAKE_EXE_LINKER_FLAGS "-Xlinker --fatal-warnings -Xlinker --gc-sections -z max-page-size=0x400 -lgcc -lc -lnosys")

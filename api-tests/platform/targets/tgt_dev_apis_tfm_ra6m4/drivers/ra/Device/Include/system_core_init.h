@@ -18,39 +18,22 @@
  *
  */
 
-#ifndef __MUSCA_B1_SYSTEM_CORE_INIT_H__
-#define __MUSCA_B1_SYSTEM_CORE_INIT_H__
+#ifndef __SYSTEM_CORE_INIT_H__
+#define __SYSTEM_CORE_INIT_H__
 
 #include <stdint.h>
+#include "bsp_api.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock) */
-extern uint32_t PeripheralClock;     /*!< Peripheral Clock Frequency */
-extern uint32_t RefClock;            /*!< External Reference Clock Frequency */
 
-/**
-  \brief Setup the microcontroller system.
+extern void RM_TFM_SystemInit (void);
 
-   Initialize the System and update the SystemCoreClock variable.
-   It should be called from Reset Handler within the first few steps.
-   The minimal feature set should be initialised for successful exit
-   from Reset Handler to main entry point.
- */
-extern void SystemInit (void);
-
-
-/**
-  \brief  Update SystemCoreClock variable.
-
-   Updates the SystemCoreClock with current core Clock retrieved from cpu registers.
- */
-extern void SystemCoreClockUpdate (void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __MUSCA_B1_SYSTEM_CORE_INIT_H__ */
+#endif /* __SYSTEM_CORE_INIT_H__ */

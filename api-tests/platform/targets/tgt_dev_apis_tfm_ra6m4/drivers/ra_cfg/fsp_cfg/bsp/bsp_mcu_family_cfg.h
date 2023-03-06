@@ -1,6 +1,10 @@
 /* generated configuration header file - do not edit */
 #ifndef BSP_MCU_FAMILY_CFG_H_
 #define BSP_MCU_FAMILY_CFG_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "bsp_mcu_device_pn_cfg.h"
 #include "bsp_mcu_device_cfg.h"
 #include "../../../ra/fsp/src/bsp/mcu/ra6m4/bsp_mcu_info.h"
@@ -12,24 +16,25 @@
 #if   BSP_CFG_HOCO_FREQUENCY == 0
 #define BSP_HOCO_HZ                 (16000000)
 #elif BSP_CFG_HOCO_FREQUENCY == 1
-#define BSP_HOCO_HZ                 (18000000)
-#elif BSP_CFG_HOCO_FREQUENCY == 2
-#define BSP_HOCO_HZ                 (20000000)
-#else
-#error "Invalid HOCO frequency chosen (BSP_CFG_HOCO_FREQUENCY) in bsp_clock_cfg.h"
-#endif
+                #define BSP_HOCO_HZ                 (18000000)
+            #elif BSP_CFG_HOCO_FREQUENCY == 2
+                #define BSP_HOCO_HZ                 (20000000)
+            #else
+                #error "Invalid HOCO frequency chosen (BSP_CFG_HOCO_FREQUENCY) in bsp_clock_cfg.h"
+            #endif
+
+#define BSP_CFG_FLL_ENABLE                 (0)
 
 #define BSP_CORTEX_VECTOR_TABLE_ENTRIES    (16U)
 #define BSP_VECTOR_TABLE_MAX_ENTRIES       (112U)
-#define BSP_MCU_VBATT_SUPPORT              (1)
 
 #if defined(_RA_TZ_SECURE)
-#define BSP_TZ_SECURE_BUILD           (1)
-#define BSP_TZ_NONSECURE_BUILD        (0)
-#elif defined(_RA_TZ_NONSECURE)
-#define BSP_TZ_SECURE_BUILD           (0)
-#define BSP_TZ_NONSECURE_BUILD        (1)
-#else
+            #define BSP_TZ_SECURE_BUILD           (1)
+            #define BSP_TZ_NONSECURE_BUILD        (0)
+            #elif defined(_RA_TZ_NONSECURE)
+            #define BSP_TZ_SECURE_BUILD           (0)
+            #define BSP_TZ_NONSECURE_BUILD        (1)
+            #else
 #define BSP_TZ_SECURE_BUILD           (0)
 #define BSP_TZ_NONSECURE_BUILD        (0)
 #endif
@@ -37,7 +42,7 @@
 /* TrustZone Settings */
 #define BSP_TZ_CFG_INIT_SECURE_ONLY       (BSP_CFG_CLOCKS_SECURE || (!BSP_CFG_CLOCKS_OVERRIDE))
 #define BSP_TZ_CFG_SKIP_INIT              (BSP_TZ_NONSECURE_BUILD && BSP_TZ_CFG_INIT_SECURE_ONLY)
-#define BSP_TZ_CFG_EXCEPTION_RESPONSE     (1)
+#define BSP_TZ_CFG_EXCEPTION_RESPONSE     (0)
 
 /* CMSIS TrustZone Settings */
 #define SCB_CSR_AIRCR_INIT                (1)
@@ -56,6 +61,11 @@
 
 #ifndef FPU_FPCCR_CLRONRET_VAL
 #define FPU_FPCCR_CLRONRET_VAL            (1)
+#endif
+
+/* The C-Cache line size that is configured during startup. */
+#ifndef BSP_CFG_C_CACHE_LINE_SIZE
+#define BSP_CFG_C_CACHE_LINE_SIZE   (1U)
 #endif
 
 /* Type 1 Peripheral Security Attribution */
@@ -79,7 +89,7 @@
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 28) /* SCI3 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 29) /* SCI2 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 30) /* SCI1 */ | \
-            (((1 > 0) ? 0U : 1U) << 31) /* SCI0 */ | \
+            (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 31) /* SCI0 */ | \
             0x33f4f9) /* Unused */
 #endif
 #ifndef BSP_TZ_CFG_PSARC
@@ -136,6 +146,11 @@
 #endif
 
 /* Type 2 Peripheral Security Attribution */
+
+/* Security attribution for Cache registers. */
+#ifndef BSP_TZ_CFG_CSAR
+#define BSP_TZ_CFG_CSAR (0xFFFFFFFFU)
+#endif
 
 /* Security attribution for RSTSRn registers. */
 #ifndef BSP_TZ_CFG_RSTSAR
@@ -235,7 +250,7 @@
 #if RA_NOT_DEFINED == RA_NOT_DEFINED
 #define BSP_TZ_CFG_DTC_USED (0U)
 #else
-#define BSP_TZ_CFG_DTC_USED (1U)
+ #define BSP_TZ_CFG_DTC_USED (1U)
 #endif
 
 /* Security attribution of FLWT and FCKMHZ registers. */
@@ -282,6 +297,11 @@
 #define BSP_TZ_CFG_BUSSARB (0xFFFFFFFFU)
 #endif
 
+/* Enable Uninitialized Non-Secure Application Fallback. */
+#ifndef BSP_TZ_CFG_NON_SECURE_APPLICATION_FALLBACK
+#define BSP_TZ_CFG_NON_SECURE_APPLICATION_FALLBACK (1U)
+#endif
+
 #define OFS_SEQ1 0xA001A001 | (1 << 1) | (3 << 2)
 #define OFS_SEQ2 (15 << 4) | (3 << 8) | (3 << 10)
 #define OFS_SEQ3 (1 << 12) | (1 << 14) | (1 << 17)
@@ -289,9 +309,78 @@
 #define OFS_SEQ5 (1 << 28) | (1 << 30)
 #define BSP_CFG_ROM_REG_OFS0 (OFS_SEQ1 | OFS_SEQ2 | OFS_SEQ3 | OFS_SEQ4 | OFS_SEQ5)
 
-#define BSP_CFG_ROM_REG_OFS1_SECURITY_ATTRIBUTION (0xFFFFFFFE)
+/* Option Function Select Register 1 Security Attribution */
+#ifndef BSP_CFG_ROM_REG_OFS1_SEL
+#if defined(_RA_TZ_SECURE) || defined(_RA_TZ_NONSECURE)
+            #define BSP_CFG_ROM_REG_OFS1_SEL (0xFFFFF8F8U | ((BSP_CFG_CLOCKS_SECURE == 0) ? 0x700U : 0U) | ((RA_NOT_DEFINED > 0) ? 0U : 0x7U))
+#else
+#define BSP_CFG_ROM_REG_OFS1_SEL (0xFFFFF8F8U)
+#endif
+#endif
+
 #define BSP_CFG_ROM_REG_OFS1 (0xFFFFFEF8 | (1 << 2) | (3) |  (1 << 8))
 
 /* Used to create IELS values for the interrupt initialization table g_interrupt_event_link_select. */
 #define BSP_PRV_IELS_ENUM(vector)    (ELC_ ## vector)
+
+/* Dual Mode Select Register */
+#ifndef BSP_CFG_ROM_REG_DUALSEL
+#define BSP_CFG_ROM_REG_DUALSEL (0xFFFFFFF8U | (0x7U))
+#endif
+
+/* Block Protection Register 0 */
+#ifndef BSP_CFG_ROM_REG_BPS0
+#define BSP_CFG_ROM_REG_BPS0 (~( 0U))
+#endif
+/* Block Protection Register 1 */
+#ifndef BSP_CFG_ROM_REG_BPS1
+#define BSP_CFG_ROM_REG_BPS1 (~( 0U))
+#endif
+/* Block Protection Register 2 */
+#ifndef BSP_CFG_ROM_REG_BPS2
+#define BSP_CFG_ROM_REG_BPS2 (~( 0U))
+#endif
+/* Block Protection Register 3 */
+#ifndef BSP_CFG_ROM_REG_BPS3
+#define BSP_CFG_ROM_REG_BPS3 (0xFFFFFFFFU)
+#endif
+/* Permanent Block Protection Register 0 */
+#ifndef BSP_CFG_ROM_REG_PBPS0
+#define BSP_CFG_ROM_REG_PBPS0 (~( 0U))
+#endif
+/* Permanent Block Protection Register 1 */
+#ifndef BSP_CFG_ROM_REG_PBPS1
+#define BSP_CFG_ROM_REG_PBPS1 (~( 0U))
+#endif
+/* Permanent Block Protection Register 2 */
+#ifndef BSP_CFG_ROM_REG_PBPS2
+#define BSP_CFG_ROM_REG_PBPS2 (~( 0U))
+#endif
+/* Permanent Block Protection Register 3 */
+#ifndef BSP_CFG_ROM_REG_PBPS3
+#define BSP_CFG_ROM_REG_PBPS3 (0xFFFFFFFFU)
+#endif
+/* Security Attribution for Block Protection Register 0 (If any blocks are marked as protected in the secure application, then mark them as secure) */
+#ifndef BSP_CFG_ROM_REG_BPS_SEL0
+#define BSP_CFG_ROM_REG_BPS_SEL0 (BSP_CFG_ROM_REG_BPS0 & BSP_CFG_ROM_REG_PBPS0)
+#endif
+/* Security Attribution for Block Protection Register 1 (If any blocks are marked as protected in the secure application, then mark them as secure) */
+#ifndef BSP_CFG_ROM_REG_BPS_SEL1
+#define BSP_CFG_ROM_REG_BPS_SEL1 (BSP_CFG_ROM_REG_BPS1 & BSP_CFG_ROM_REG_PBPS1)
+#endif
+/* Security Attribution for Block Protection Register 2 (If any blocks are marked as protected in the secure application, then mark them as secure) */
+#ifndef BSP_CFG_ROM_REG_BPS_SEL2
+#define BSP_CFG_ROM_REG_BPS_SEL2 (BSP_CFG_ROM_REG_BPS2 & BSP_CFG_ROM_REG_PBPS2)
+#endif
+/* Security Attribution for Block Protection Register 3 (If any blocks are marked as protected in the secure application, then mark them as secure) */
+#ifndef BSP_CFG_ROM_REG_BPS_SEL3
+#define BSP_CFG_ROM_REG_BPS_SEL3 (BSP_CFG_ROM_REG_BPS3 & BSP_CFG_ROM_REG_BPS3)
+#endif
+#ifndef BSP_CLOCK_CFG_MAIN_OSC_WAIT
+#define BSP_CLOCK_CFG_MAIN_OSC_WAIT (9)
+#endif
+
+#ifdef __cplusplus
+}
+#endif
 #endif /* BSP_MCU_FAMILY_CFG_H_ */

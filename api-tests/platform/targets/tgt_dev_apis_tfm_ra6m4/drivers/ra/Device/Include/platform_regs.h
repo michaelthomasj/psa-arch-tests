@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#ifndef __RA6M4_PLATFORM_REGS_H__
-#define __RA6M4_PLATFORM_REGS_H__
+#ifndef __PLATFORM_REGS_H__
+#define __PLATFORM_REGS_H__
 
 #include <stdint.h>
 #include "platform_base_address.h"
 
-#endif /* __RA6M4_PLATFORM_REGS_H__ */
+#endif /* __PLATFORM_REGS_H__ */

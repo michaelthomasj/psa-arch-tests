@@ -64,10 +64,10 @@ if(${SUITE} STREQUAL "INITIAL_ATTESTATION")
 	list(APPEND PAL_SRC_C_NSPE
 		${PSA_ROOT_DIR}/platform/targets/common/nspe/initial_attestation/pal_attestation_intf.c
 		${PSA_ROOT_DIR}/platform/targets/common/nspe/initial_attestation/pal_attestation_crypto.c
-                ${CMAKE_CURRENT_BINARY_DIR}/${PSA_TARGET_QCBOR}/src/UsefulBuf.c
-                ${CMAKE_CURRENT_BINARY_DIR}/${PSA_TARGET_QCBOR}/src/ieee754.c
-                ${CMAKE_CURRENT_BINARY_DIR}/${PSA_TARGET_QCBOR}/src/qcbor_decode.c
-                ${CMAKE_CURRENT_BINARY_DIR}/${PSA_TARGET_QCBOR}/src/qcbor_encode.c
+                ${PSA_TARGET_QCBOR}/src/UsefulBuf.c
+                ${PSA_TARGET_QCBOR}/src/ieee754.c
+                ${PSA_TARGET_QCBOR}/src/qcbor_decode.c
+                ${PSA_TARGET_QCBOR}/src/qcbor_encode.c
 	)
 endif()
 
@@ -87,6 +87,8 @@ list(APPEND PAL_DRIVER_INCLUDE_PATHS
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra6m4/drivers/ra/board/ra6m4_ek
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra6m4/drivers/ra/CMSIS/Core/Include
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra6m4/drivers/ra/Device/Config
+	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra6m4/drivers/ra_cfg/fsp_cfg
+	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra6m4/drivers/ra_cfg/fsp_cfg/bsp
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra6m4/drivers/ra/Device/Include
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra6m4/drivers/ra/Device/Source
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra6m4/drivers/ra/fsp/inc
@@ -98,8 +100,6 @@ list(APPEND PAL_DRIVER_INCLUDE_PATHS
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra6m4/drivers/ra/fsp/src/r_ioport
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra6m4/drivers/ra/fsp/src/r_sci_uart
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra6m4/drivers/ra/fsp/src/r_flash_hp
-	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra6m4/drivers/ra_cfg/fsp_cfg
-	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra6m4/drivers/ra_cfg/fsp_cfg/bsp
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra6m4/drivers/ra_gen
 )
 
