@@ -125,6 +125,17 @@ int32_t psa_cipher_update_test(caller_security_t caller __UNUSED)
         TEST_ASSERT_MEMCMP(check1[i].output, check1[i].expected_output, expected_output_length,
                            TEST_CHECKPOINT_NUM(11));
 
+        if(expected_output_length != 0U)
+        {
+        status = val->crypto_function(VAL_CRYPTO_CIPHER_FINISH,
+                                      &operation,
+                                      check1[i].output,
+                                      check1[i].output_size,
+                                      &expected_output_length);
+        TEST_ASSERT_EQUAL(status, PSA_SUCCESS, TEST_CHECKPOINT_NUM(21)); 
+
+        }                  
+
         /* Abort a cipher operation */
         status = val->crypto_function(VAL_CRYPTO_CIPHER_ABORT, &operation);
         TEST_ASSERT_EQUAL(status, PSA_SUCCESS, TEST_CHECKPOINT_NUM(12));
