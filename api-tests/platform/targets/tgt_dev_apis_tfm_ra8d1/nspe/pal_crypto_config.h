@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2020, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2022, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +37,7 @@
 #ifndef TF_M_PROFILE_SMALL
 #ifndef TF_M_PROFILE_MEDIUM
 #define ARCH_TEST_RSA
-//#define ARCH_TEST_RSA_1024
+#define ARCH_TEST_RSA_1024
 #define ARCH_TEST_RSA_2048
 #define ARCH_TEST_RSA_3072
 #endif
@@ -56,9 +56,9 @@
  */
 #ifndef TF_M_PROFILE_SMALL
 #define ARCH_TEST_ECC
-//#define ARCH_TEST_ECC_CURVE_SECP192R1
+#define ARCH_TEST_ECC_CURVE_SECP192R1
 #ifndef TF_M_PROFILE_MEDIUM
-//#define ARCH_TEST_ECC_CURVE_SECP224R1
+#define ARCH_TEST_ECC_CURVE_SECP224R1
 #endif
 #define ARCH_TEST_ECC_CURVE_SECP256R1
 #ifndef TF_M_PROFILE_MEDIUM
@@ -78,7 +78,7 @@
 #define ARCH_TEST_AES_128
 #define ARCH_TEST_AES_192
 #define ARCH_TEST_AES_256
-//#define ARCH_TEST_AES_512
+#define ARCH_TEST_AES_512
 
 /**
  * \def  ARCH_TEST_DES
@@ -268,8 +268,8 @@
 #define ARCH_TEST_SHA256
 #ifndef TF_M_PROFILE_SMALL
 #ifndef TF_M_PROFILE_MEDIUM
-//#define ARCH_TEST_SHA384
-//#define ARCH_TEST_SHA512
+#define ARCH_TEST_SHA384
+#define ARCH_TEST_SHA512
 #endif
 #endif
 //#define ARCH_TEST_SHA512_224
@@ -287,6 +287,15 @@
  * Requires: ARCH_TEST_HASH
 */
 #define ARCH_TEST_HKDF
+
+/**
+ * \def ARCH_TEST_TLS12_PRF
+ *
+ * Enable the TLS-1.2 PRF algorithm (RFC 5246).
+ *
+ * Requires: ARCH_TEST_HASH
+*/
+#define ARCH_TEST_TLS12_PRF
 
 /**
  * \def ARCH_TEST_xMAC
@@ -323,9 +332,9 @@
  *
  */
 #ifndef TF_M_PROFILE_SMALL
-#ifndef TF_M_PROFILE_MEDIUM
+//#ifndef TF_M_PROFILE_MEDIUM
 #define ARCH_TEST_GCM
-#endif
+//#endif
 #endif
 
 /**

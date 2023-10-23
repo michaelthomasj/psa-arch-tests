@@ -41,7 +41,6 @@ else()
 		${PSA_ROOT_DIR}/platform/drivers/watchdog/cmsdk/pal_wd_cmsdk.c
 		${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra8d1/drivers/ra/fsp/src/r_ioport/r_ioport.c
 		${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra8d1/drivers/ra/fsp/src/r_sci_b_uart/r_sci_b_uart.c
-		${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra8d1/drivers/ra/fsp/src/r_flash_hp/flash_guards.c
 		${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra8d1/drivers/ra/fsp/src/bsp/mcu/all/bsp_irq.c
 		${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra8d1/drivers/ra/fsp/src/bsp/mcu/all/bsp_io.c
 	)
@@ -99,7 +98,7 @@ list(APPEND PAL_DRIVER_INCLUDE_PATHS
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra8d1/drivers/ra/fsp/src/bsp/mcu/all
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra8d1/drivers/ra/fsp/src/bsp/mcu/ra8d1
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra8d1/drivers/ra/fsp/src/r_ioport
-	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra8d1/drivers/ra/fsp/src/r_sci_uart
+	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra8d1/drivers/ra/fsp/src/r_sci_b_uart
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra8d1/drivers/ra/fsp/src/r_flash_hp
 	${PSA_ROOT_DIR}/platform/targets/tgt_dev_apis_tfm_ra8d1/drivers/ra_gen
 )

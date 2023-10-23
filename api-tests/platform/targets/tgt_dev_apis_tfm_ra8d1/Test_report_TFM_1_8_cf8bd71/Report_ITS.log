@@ -1,0 +1,158 @@
+
+***** PSA Architecture Test Suite - Version 1.4 *****
+
+Running.. Storage Suite
+******************************************
+
+TEST: 401 | DESCRIPTION: UID not found check | UT: ITS
+[Info] Executing tests from non-secure
+
+[Info] Executing ITS tests
+[Check 1] Call get API for UID 6 which is not set
+[Check 2] Call get_info API for UID 6 which is not set
+[Check 3] Call remove API for UID 6 which is not set
+[Check 4] Call get API for UID 6 which is removed
+[Check 5] Call get_info API for UID 6 which is removed
+[Check 6] Call remove API for UID 6 which is removed
+Set storage for UID 6
+[Check 7] Call get API for different UID 5
+[Check 8] Call get_info API for different UID 5
+[Check 9] Call remove API for different UID 5
+
+TEST RESULT: PASSED
+
+******************************************
+
+TEST: 402 | DESCRIPTION: Write once error check | UT: ITS
+[Info] Executing tests from non-secure
+
+[Info] Executing ITS tests
+[Info] UID 1 was created with PSA_STORAGE_FLAG_WRITE_ONCE previously
+[Check 1] Retrieve metadata for UID 1 and check content
+[Check 2] Try to remove the UID 1 having WRITE_ONCE flag
+[Check 3] Create a new UID 2 with WRITE_ONCE flag
+[Info ] UID 2 was created with PSA_STORAGE_FLAG_WRITE_ONCE previously
+[Check 4] Try to remove the UID 2 having WRITE_ONCE flag
+[Check 5] Try to change the length of write_once UID 2
+[Check 6] Check UID removal still fails
+[Check 7] Try to change the WRITE_ONCE flag to None for UID 2
+[Check 8] Check UID removal still fails
+
+TEST RESULT: PASSED
+
+******************************************
+
+TEST: 403 | DESCRIPTION: Insufficient space check | UT: ITS
+[Info] Executing tests from non-secure
+
+[Info] Executing ITS tests
+[Check 1] Overload storage space
+UID 7 set failed due to insufficient space
+Remove all registered UIDs
+[Check 2] Overload storage again to verify all previous UID removed
+UID 7 set failed due to insufficient space
+Remove all registered UIDs
+
+TEST RESULT: PASSED
+
+******************************************
+
+TEST: 404 | DESCRIPTION: Data Consistency check | UT: ITS
+[Info] Executing tests from non-secure
+
+[Info] Executing ITS tests
+[Check 1] Call set API with reduced length - TEST_BUFF_SIZE/2
+[Check 2] Call get API with default length - TEST_BUFF_SIZE
+
+TEST RESULT: PASSED
+
+******************************************
+
+TEST: 405 | DESCRIPTION: Success scenarios check | UT: ITS
+[Info] Executing tests from non-secure
+
+[Info] Executing ITS tests
+[Check 1] Set UID with data length zero and call storage APIs
+[Check 2] Resetting the length check
+
+TEST RESULT: PASSED
+
+******************************************
+
+TEST: 406 | DESCRIPTION: Check for storage create flags | UT: ITS
+[Info] Executing tests from non-secure
+
+[Info] Executing ITS tests
+[Check 1] Call set API with flag - PSA_STORAGE_FLAG_NONE
+[Check 2] Call set API with flag - PSA_STORAGE_FLAG_NO_CONFIDENTIALITY
+[Check 3] Call set API with flag - PSA_STORAGE_FLAG_NO_REPLAY_PROTECTION
+
+TEST RESULT: PASSED
+
+******************************************
+
+TEST: 407 | DESCRIPTION: Incorrect Size check | UT: ITS
+[Info] Executing tests from non-secure
+
+[Info] Executing ITS tests
+Create a valid Storage - TEST_BUFF_SIZE/2
+Increase the length of storage - TEST_BUFF_SIZE
+[Check 1] Call get API with old length - TEST_BUFF_SIZE/2
+[Check 2] Call get API with old length - TEST_BUFF_SIZE/4
+Decrease the length of storage - TEST_BUFF_SIZE/4
+[Check 3] Call get API with old length - TEST_BUFF_SIZE/2
+[Check 4] Call get API with old length - TEST_BUFF_SIZE
+[Check 5] Call get API with valid length - TEST_BUFF_SIZE/4
+
+TEST RESULT: PASSED
+
+******************************************
+
+TEST: 408 | DESCRIPTION: Invalid offset check | UT: ITS
+[Info] Executing tests from non-secure
+
+[Info] Executing ITS tests
+[Check 1] Try to access data with varying valid offset
+[Check 2] Try to access data with varying invalid offset
+
+TEST RESULT: PASSED
+
+******************************************
+
+TEST: 409 | DESCRIPTION: Invalid Arguments check | UT: ITS
+[Info] Executing tests from non-secure
+
+[Info] Executing ITS tests
+[Check 1] Call set API with NULL pointer and data length 0
+[Check 2] Call get API with NULL read buffer and data length 0
+[Check 3] Remove the UID
+[Check 4] Call get_info API to verify UID removed
+[Check 5] Create UID with zero data_len and valid write buffer
+[Check 8] Call get API with NULL read buffer and data length 0
+[Check 9] Increase the length
+
+TEST RESULT: PASSED
+
+******************************************
+
+TEST: 410 | DESCRIPTION: UID value zero check | UT: ITS
+[Info] Executing tests from non-secure
+
+[Info] Executing ITS tests
+[Check 1] Creating storage with UID 0 should fail
+[Check 2] Get_info for UID 0 should fail
+[Check 3] Removing storage with UID 0 should fail
+
+TEST RESULT: PASSED
+
+******************************************
+
+************ Storage Suite Report **********
+TOTAL TESTS     : 10
+TOTAL PASSED    : 10
+TOTAL SIM ERROR : 0
+TOTAL FAILED    : 0
+TOTAL SKIPPED   : 0
+******************************************
+
+Entering standby.. 
