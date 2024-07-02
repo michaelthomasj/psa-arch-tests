@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2022, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2023, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,6 +65,9 @@
 #define ARCH_TEST_ECC_CURVE_SECP384R1
 #endif
 #endif
+/* curves of size <255 are obsolete algorithms, should be disabled. */
+#undef ARCH_TEST_ECC_CURVE_SECP192R1
+#undef ARCH_TEST_ECC_CURVE_SECP224R1
 
 /**
  * \def ARCH_TEST_AES
@@ -381,6 +384,21 @@
  * Enable ECC support for asymmetric API.
 */
 //#define ARCH_TEST_ECC_ASYMMETRIC_API_SUPPORT
+
+/**
+ * \def ARCH_TEST_HASH_SUSPEND
+ *
+ * Enable has suspend.
+*/
+//#define ARCH_TEST_HASH_SUSPEND
+
+/**
+ * \def ARCH_TEST_HASH_RESUME
+ *
+ * Enable has resume.
+*/
+//#define ARCH_TEST_HASH_RESUME
+
 #include "pal_crypto_config_check.h"
 
 #endif /* _PAL_CRYPTO_CONFIG_H_ */
