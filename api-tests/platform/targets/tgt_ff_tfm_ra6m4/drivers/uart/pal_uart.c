@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 **/
-
 #include "pal_uart.h"
-#include "platform_base_address.h"
 
 #ifndef ARG_UNUSED
 #define ARG_UNUSED(arg)  (void)arg
@@ -24,28 +22,35 @@
 
 static volatile uint8_t tx_data_empty_test = 1;
 static volatile uint8_t tx_irq_triggered_test = 0;
+static volatile uint8_t tx_irq_generate_test = 0;
 
-static sci_uart_instance_ctrl_t g_uart0_ctrl;
+extern void call_spm_handle_interrupt(void);
 
-static baud_setting_t g_uart0_baud_setting =
-{
-/* Baud rate calculated with 0.469% error. */.abcse = 0,
-  .abcs = 0, .bgdm = 1, .cks = 1, .brr = 161, .mddr = (uint8_t) 256, .brme = false };
+ /* Instance structure to use this module. */
+sci_uart_instance_ctrl_t g_uart0_ctrl;
+
+baud_setting_t g_uart0_baud_setting =
+        {
+        /* Baud rate calculated with 0.469% error. */.semr_baudrate_bits_b.abcse = 0,
+          .semr_baudrate_bits_b.abcs = 0, .semr_baudrate_bits_b.bgdm = 1, .cks = 1, .brr = 161, .mddr = (uint8_t) 256, .semr_baudrate_bits_b.brme =
+                  false };
 
 /** UART extended configuration for UARTonSCI HAL driver */
-static sci_uart_extended_cfg_t g_uart0_cfg_extend =
-{ .clock = SCI_UART_CLOCK_INT,
-  .rx_edge_start = SCI_UART_START_BIT_FALLING_EDGE,
-  .noise_cancel = SCI_UART_NOISE_CANCELLATION_DISABLE,
-  .rx_fifo_trigger = SCI_UART_RX_FIFO_TRIGGER_MAX,
-  .p_baud_setting = &g_uart0_baud_setting,
-  .uart_mode = UART_MODE_RS232,
-  .ctsrts_en = SCI_UART_CTSRTS_RTS_OUTPUT,
-  .flow_control_pin = (bsp_io_port_pin_t) (0xFFFFU),
-    };
+const sci_uart_extended_cfg_t g_uart0_cfg_extend =
+{ .clock = SCI_UART_CLOCK_INT, .rx_edge_start = SCI_UART_START_BIT_FALLING_EDGE, .noise_cancel =
+          SCI_UART_NOISE_CANCELLATION_DISABLE,
+  .rx_fifo_trigger = SCI_UART_RX_FIFO_TRIGGER_MAX, .p_baud_setting = &g_uart0_baud_setting, .flow_control =
+          SCI_UART_FLOW_CONTROL_RTS,
+  .flow_control_pin = (bsp_io_port_pin_t) UINT16_MAX,
+  .rs485_setting =
+  { .enable = SCI_UART_RS485_DISABLE, .polarity = SCI_UART_RS485_DE_POLARITY_HIGH,
+    .de_control_pin = (bsp_io_port_pin_t) UINT16_MAX,
+          },
+  .irda_setting =
+  { .ircr_bits_b.ire = 0, .ircr_bits_b.irrxinv = 0, .ircr_bits_b.irtxinv = 0, }, };
 
 /** UART interface configuration */
-static uart_cfg_t g_uart0_cfg =
+const uart_cfg_t g_uart0_cfg =
 { .channel = 0, .data_bits = UART_DATA_BITS_8, .parity = UART_PARITY_OFF, .stop_bits = UART_STOP_BITS_1, .p_callback =
           user_uart_callback,
   .p_context = NULL, .p_extend = &g_uart0_cfg_extend,
@@ -53,48 +58,15 @@ static uart_cfg_t g_uart0_cfg =
   .p_transfer_rx = NULL,
   .rxi_ipl = (12),
   .txi_ipl = (12), .tei_ipl = (12), .eri_ipl = (12),
-  .rxi_irq = VECTOR_NUMBER_SCI0_RXI,
-  .txi_irq = VECTOR_NUMBER_SCI0_TXI,
-  .tei_irq = VECTOR_NUMBER_SCI0_TEI,
-  .eri_irq = VECTOR_NUMBER_SCI0_ERI,
+                .rxi_irq             = VECTOR_NUMBER_SCI0_RXI,
+                .txi_irq             = VECTOR_NUMBER_SCI0_TXI,
+                .tei_irq             = VECTOR_NUMBER_SCI0_TEI,
+                .eri_irq             = VECTOR_NUMBER_SCI0_ERI,
         };
 
- /* Instance structure to use this module. */
-static uart_instance_t g_uart0 =
+/* Instance structure to use this module. */
+const uart_instance_t g_uart0 =
 { .p_ctrl = &g_uart0_ctrl, .p_cfg = &g_uart0_cfg, .p_api = &g_uart_on_sci };
-
-static ioport_instance_ctrl_t g_ioport_ctrl;
-static const ioport_pin_cfg_t g_bsp_pin_cfg_data[] = {
-    {
-        .pin = BSP_IO_PORT_01_PIN_00,
-        .pin_cfg = ((uint32_t) IOPORT_CFG_PERIPHERAL_PIN | (uint32_t) IOPORT_PERIPHERAL_SCI0_2_4_6_8),
-    },
-    {
-        .pin = BSP_IO_PORT_01_PIN_01,
-        .pin_cfg = ((uint32_t) IOPORT_CFG_PERIPHERAL_PIN | (uint32_t) IOPORT_PERIPHERAL_SCI0_2_4_6_8),
-    },
-    {
-        .pin = BSP_IO_PORT_01_PIN_08,
-        .pin_cfg = ((uint32_t) IOPORT_CFG_PERIPHERAL_PIN | (uint32_t) IOPORT_PERIPHERAL_DEBUG),
-    },
-    {
-        .pin = BSP_IO_PORT_01_PIN_09,
-        .pin_cfg = ((uint32_t) IOPORT_CFG_PERIPHERAL_PIN | (uint32_t) IOPORT_PERIPHERAL_DEBUG),
-    },
-    {
-        .pin = BSP_IO_PORT_01_PIN_10,
-        .pin_cfg = ((uint32_t) IOPORT_CFG_PERIPHERAL_PIN | (uint32_t) IOPORT_PERIPHERAL_DEBUG),
-    },
-    {
-        .pin = BSP_IO_PORT_03_PIN_00,
-        .pin_cfg = ((uint32_t) IOPORT_CFG_PERIPHERAL_PIN | (uint32_t) IOPORT_PERIPHERAL_DEBUG),
-    },
-};
-
-static const ioport_cfg_t g_bsp_pin_cfg = {
-    .number_of_pins = sizeof(g_bsp_pin_cfg_data)/sizeof(ioport_pin_cfg_t),
-    .p_pin_cfg_data = &g_bsp_pin_cfg_data[0],
-};
 
 /**
     @brief    - This function initializes the UART
@@ -103,8 +75,6 @@ static const ioport_cfg_t g_bsp_pin_cfg = {
 void pal_uart_ra6m4_init(uint32_t uart_base_addr)
 {
 	ARG_UNUSED(uart_base_addr);
-    R_IOPORT_Open(&g_ioport_ctrl, &g_bsp_pin_cfg);
-
     R_SCI_UART_Open(g_uart0.p_ctrl, g_uart0.p_cfg);
 
 }
@@ -214,6 +184,7 @@ static int pal_uart_ra6m4_is_tx_irq_triggerd(void)
 **/
 void pal_uart_ra6m4_generate_irq(void)
 {
+    tx_irq_generate_test = 1;
     /* Fill the TX buffer to generate TX IRQ */
     pal_uart_ra6m4_putc(' ');
     pal_uart_ra6m4_putc(' ');
@@ -227,7 +198,7 @@ void pal_uart_ra6m4_generate_irq(void)
 **/
 void pal_uart_ra6m4_disable_irq(void)
 {
-    tx_irq_triggered_test = 0;
+
 }
 
 void user_uart_callback(uart_callback_args_t *p_args)
@@ -239,6 +210,11 @@ void user_uart_callback(uart_callback_args_t *p_args)
     if(p_args->event == UART_EVENT_TX_COMPLETE)
     {
        tx_data_empty_test = 1U;
-       tx_irq_triggered_test = 1U;
+       if(tx_irq_generate_test == 1)
+       {
+        call_spm_handle_interrupt();
+        tx_irq_generate_test = 0;
+        tx_irq_triggered_test = 1U;
+       }
     }
 }

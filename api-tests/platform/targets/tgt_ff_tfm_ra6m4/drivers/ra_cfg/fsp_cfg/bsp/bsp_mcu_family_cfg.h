@@ -27,6 +27,7 @@ extern "C" {
 
 #define BSP_CORTEX_VECTOR_TABLE_ENTRIES    (16U)
 #define BSP_VECTOR_TABLE_MAX_ENTRIES       (112U)
+#define BSP_CFG_INLINE_IRQ_FUNCTIONS       (1)
 
 #if defined(_RA_TZ_SECURE)
             #define BSP_TZ_SECURE_BUILD           (1)
@@ -89,7 +90,7 @@ extern "C" {
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 28) /* SCI3 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 29) /* SCI2 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 30) /* SCI1 */ | \
-            (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 31) /* SCI0 */ | \
+            (((1 > 0) ? 0U : 1U) << 31) /* SCI0 */ | \
             0x33f4f9) /* Unused */
 #endif
 #ifndef BSP_TZ_CFG_PSARC
@@ -100,7 +101,7 @@ extern "C" {
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 8) /* SSIE0 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 12) /* SDHI0 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 13) /* DOC */ | \
-            (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 31) /* SCE9 */ | \
+            (((1 > 0) ? 0U : 1U) << 31) /* SCE9 */ | \
             0x7fffcef4) /* Unused */
 #endif
 #ifndef BSP_TZ_CFG_PSARD
@@ -312,7 +313,7 @@ extern "C" {
 /* Option Function Select Register 1 Security Attribution */
 #ifndef BSP_CFG_ROM_REG_OFS1_SEL
 #if defined(_RA_TZ_SECURE) || defined(_RA_TZ_NONSECURE)
-            #define BSP_CFG_ROM_REG_OFS1_SEL (0xFFFFF8F8U | ((BSP_CFG_CLOCKS_SECURE == 0) ? 0x700U : 0U) | ((RA_NOT_DEFINED > 0) ? 0U : 0x7U))
+            #define BSP_CFG_ROM_REG_OFS1_SEL (0xFFFFF8F8U | ((0U << 0U)) | ((0U << 2U)) | ((BSP_CFG_CLOCKS_SECURE == 0) ? 0x700U : 0U))
 #else
 #define BSP_CFG_ROM_REG_OFS1_SEL (0xFFFFF8F8U)
 #endif
@@ -375,6 +376,10 @@ extern "C" {
 /* Security Attribution for Block Protection Register 3 (If any blocks are marked as protected in the secure application, then mark them as secure) */
 #ifndef BSP_CFG_ROM_REG_BPS_SEL3
 #define BSP_CFG_ROM_REG_BPS_SEL3 (BSP_CFG_ROM_REG_BPS3 & BSP_CFG_ROM_REG_BPS3)
+#endif
+/* Security Attribution for Bank Select Register */
+#ifndef BSP_CFG_ROM_REG_BANKSEL_SEL
+#define BSP_CFG_ROM_REG_BANKSEL_SEL (0xFFFFFFFFU)
 #endif
 #ifndef BSP_CLOCK_CFG_MAIN_OSC_WAIT
 #define BSP_CLOCK_CFG_MAIN_OSC_WAIT (9)

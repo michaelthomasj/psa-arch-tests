@@ -24,11 +24,19 @@
 
 void user_uart_callback(uart_callback_args_t *p_args);
 
-#define VECTOR_NUMBER_SCI0_RXI ((IRQn_Type) 17) /* SCI0 RXI (Receive data full) */
-#define VECTOR_NUMBER_SCI0_TXI ((IRQn_Type) 18) /* SCI0 TXI (Transmit data empty) */
-#define VECTOR_NUMBER_SCI0_TEI ((IRQn_Type) 19) /* SCI0 TEI (Transmit end) */
-#define VECTOR_NUMBER_SCI0_ERI ((IRQn_Type) 20) /* SCI0 ERI (Receive error) */
+// #define VECTOR_NUMBER_SCI0_RXI ((IRQn_Type) 17) /* SCI0 RXI (Receive data full) */
+// #define VECTOR_NUMBER_SCI0_TXI ((IRQn_Type) 18) /* SCI0 TXI (Transmit data empty) */
+// #define VECTOR_NUMBER_SCI0_TEI ((IRQn_Type) 19) /* SCI0 TEI (Transmit end) */
+// #define VECTOR_NUMBER_SCI0_ERI ((IRQn_Type) 20) /* SCI0 ERI (Receive error) */
 
+#define VECTOR_NUMBER_SCI0_RXI ((IRQn_Type) 0) /* SCI0 RXI (Receive data full) */
+#define SCI0_RXI_IRQn          ((IRQn_Type) 0) /* SCI0 RXI (Receive data full) */
+#define VECTOR_NUMBER_SCI0_TXI ((IRQn_Type) 1) /* SCI0 TXI (Transmit data empty) */
+#define SCI0_TXI_IRQn          ((IRQn_Type) 1) /* SCI0 TXI (Transmit data empty) */
+#define VECTOR_NUMBER_SCI0_TEI ((IRQn_Type) 2) /* SCI0 TEI (Transmit end) */
+#define SCI0_TEI_IRQn          ((IRQn_Type) 2) /* SCI0 TEI (Transmit end) */
+#define VECTOR_NUMBER_SCI0_ERI ((IRQn_Type) 3) /* SCI0 ERI (Receive error) */
+#define SCI0_ERI_IRQn          ((IRQn_Type) 3) /* SCI0 ERI (Receive error) */
 
 /* function prototypes */
 void pal_uart_ra6m4_init(uint32_t uart_base_addr);

@@ -1,29 +1,13 @@
-/***********************************************************************************************************************
- * Copyright [2020] Renesas Electronics Corporation and/or its affiliates.  All Rights Reserved.
- *
- * This software and documentation are supplied by Renesas Electronics America Inc. and may only be used with products
- * of Renesas Electronics Corp. and its affiliates ("Renesas").  No other uses are authorized.  Renesas products are
- * sold pursuant to Renesas terms and conditions of sale.  Purchasers are solely responsible for the selection and use
- * of Renesas products and Renesas assumes no liability.  No license, express or implied, to any intellectual property
- * right is granted by Renesas. This software is protected under all applicable laws, including copyright laws. Renesas
- * reserves the right to change or discontinue this software and/or this documentation. THE SOFTWARE AND DOCUMENTATION
- * IS DELIVERED TO YOU "AS IS," AND RENESAS MAKES NO REPRESENTATIONS OR WARRANTIES, AND TO THE FULLEST EXTENT
- * PERMISSIBLE UNDER APPLICABLE LAW, DISCLAIMS ALL WARRANTIES, WHETHER EXPLICITLY OR IMPLICITLY, INCLUDING WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT, WITH RESPECT TO THE SOFTWARE OR
- * DOCUMENTATION.  RENESAS SHALL HAVE NO LIABILITY ARISING OUT OF ANY SECURITY VULNERABILITY OR BREACH.  TO THE MAXIMUM
- * EXTENT PERMITTED BY LAW, IN NO EVENT WILL RENESAS BE LIABLE TO YOU IN CONNECTION WITH THE SOFTWARE OR DOCUMENTATION
- * (OR ANY PERSON OR ENTITY CLAIMING RIGHTS DERIVED FROM YOU) FOR ANY LOSS, DAMAGES, OR CLAIMS WHATSOEVER, INCLUDING,
- * WITHOUT LIMITATION, ANY DIRECT, CONSEQUENTIAL, SPECIAL, INDIRECT, PUNITIVE, OR INCIDENTAL DAMAGES; ANY LOST PROFITS,
- * OTHER ECONOMIC DAMAGE, PROPERTY DAMAGE, OR PERSONAL INJURY; AND EVEN IF RENESAS HAS BEEN ADVISED OF THE POSSIBILITY
- * OF SUCH LOSS, DAMAGES, CLAIMS OR COSTS.
- **********************************************************************************************************************/
+/*
+* Copyright (c) 2020 - 2024 Renesas Electronics Corporation and/or its affiliates
+*
+* SPDX-License-Identifier: BSD-3-Clause
+*/
 
 /***********************************************************************************************************************
  * Includes
  **********************************************************************************************************************/
 #include "bsp_api.h"
-#include "bsp_irq.h"
-#include "bsp_module_stop.h"
 #include "r_sci_uart.h"
 #include <string.h>
 
@@ -37,23 +21,23 @@
  #define SCI_UART_CFG_TX_ENABLE                 1
 #endif
 
-/** Number of divisors in the data table used for baud rate calculation. */
+/* Number of divisors in the data table used for baud rate calculation. */
 #define SCI_UART_NUM_DIVISORS_ASYNC             (13U)
 
-/** Valid range of values for the modulation duty register is 128 - 256 (256 = modulation disabled). */
+/* Valid range of values for the modulation duty register is 128 - 256 (256 = modulation disabled). */
 #define SCI_UART_MDDR_MIN                       (128U)
 #define SCI_UART_MDDR_MAX                       (256U)
 
-/** The bit rate register is 8-bits, so the maximum value is 255. */
+/* The bit rate register is 8-bits, so the maximum value is 255. */
 #define SCI_UART_BRR_MAX                        (255U)
 
-/** No limit to the number of bytes to read or write if DTC is not used. */
+/* No limit to the number of bytes to read or write if DTC is not used. */
 #define SCI_UART_MAX_READ_WRITE_NO_DTC          (0xFFFFFFFFU)
 
-/** Mask of invalid data bits in 9-bit mode. */
+/* Mask of invalid data bits in 9-bit mode. */
 #define SCI_UART_ALIGN_2_BYTES                  (0x1U)
 
-/** "SCIU" in ASCII.  Used to determine if the control block is open. */
+/* "SCIU" in ASCII.  Used to determine if the control block is open. */
 #define SCI_UART_OPEN                           (0x53434955U)
 
 #define SCI_UART_SCMR_DEFAULT_VALUE             (0xF2U)
@@ -72,14 +56,14 @@
 
 #define SCI_UART_SPMR_CTSE_OFFSET               (1U)
 
-/** SCI SCR register bit masks */
+/* SCI SCR register bit masks */
 #define SCI_SCR_TEIE_MASK                       (0x04U) ///< Transmit End Interrupt Enable
 #define SCI_SCR_RE_MASK                         (0x10U) ///< Receive Enable
 #define SCI_SCR_TE_MASK                         (0x20U) ///< Transmit Enable
 #define SCI_SCR_RIE_MASK                        (0x40U) ///< Receive Interrupt Enable
 #define SCI_SCR_TIE_MASK                        (0x80U) ///< Transmit Interrupt Enable
 
-/** SCI SEMR register bit offsets */
+/* SCI SEMR register bit offsets */
 #define SCI_UART_SEMR_BRME_OFFSET               (2U)
 #define SCI_UART_SEMR_ABCSE_OFFSET              (3U)
 #define SCI_UART_SEMR_ABCS_OFFSET               (4U)
@@ -88,13 +72,14 @@
                                                  (1U << SCI_UART_SEMR_ABCSE_OFFSET) | \
                                                  (1U << SCI_UART_SEMR_ABCS_OFFSET) | (1U << SCI_UART_SEMR_BGDM_OFFSET))
 
-/** SCI SMR register bit masks */
+/* SCI SMR register bit masks */
 #define SCI_SMR_CKS_VALUE_MASK                  (0x03U) ///< CKS: 2 bits
 
-/** SCI SSR register receiver error bit masks */
+/* SCI SSR register receiver error bit masks */
 #define SCI_SSR_ORER_MASK                       (0x20U) ///< overflow error
 #define SCI_SSR_FER_MASK                        (0x10U) ///< framing error
 #define SCI_SSR_PER_MASK                        (0x08U) ///< parity err
+#define SCI_SSR_FIFO_RESERVED_MASK              (0x02U) ///< Reserved bit mask for SSR_FIFO register
 #define SCI_RCVR_ERR_MASK                       (SCI_SSR_ORER_MASK | SCI_SSR_FER_MASK | SCI_SSR_PER_MASK)
 
 #define SCI_REG_SIZE                            (R_SCI1_BASE - R_SCI0_BASE)
@@ -123,6 +108,13 @@
                                                  (TRANSFER_ADDR_MODE_INCREMENTED << TRANSFER_SETTINGS_SRC_ADDR_BITS) | \
                                                  (TRANSFER_IRQ_END << TRANSFER_SETTINGS_IRQ_BITS) |                    \
                                                  (TRANSFER_ADDR_MODE_FIXED << TRANSFER_SETTINGS_DEST_ADDR_BITS))
+#ifndef SCI_UART_FLOW_CONTROL_ACTIVE
+ #define SCI_UART_FLOW_CONTROL_ACTIVE           BSP_IO_LEVEL_HIGH
+#endif
+
+#ifndef SCI_UART_FLOW_CONTROL_INACTIVE
+ #define SCI_UART_FLOW_CONTROL_INACTIVE         BSP_IO_LEVEL_LOW
+#endif
 
 /***********************************************************************************************************************
  * Private constants
@@ -145,7 +137,7 @@ typedef struct st_baud_setting_const_t
     uint8_t cks   : 2;                 /**< CKS  value to get divisor (CKS = N) */
 } baud_setting_const_t;
 
-/** Noise filter setting definition */
+/* Noise filter setting definition */
 typedef enum e_noise_cancel_lvl
 {
     NOISE_CANCEL_LVL1,                 /**< Noise filter level 1(weak) */
@@ -157,18 +149,29 @@ typedef enum e_noise_cancel_lvl
 #if defined(__ARMCC_VERSION) || defined(__ICCARM__)
 typedef void (BSP_CMSE_NONSECURE_CALL * sci_uart_prv_ns_callback)(uart_callback_args_t * p_args);
 #elif defined(__GNUC__)
-typedef BSP_CMSE_NONSECURE_CALL void (* sci_uart_prv_ns_callback)(uart_callback_args_t * p_args);
+typedef BSP_CMSE_NONSECURE_CALL void (*volatile sci_uart_prv_ns_callback)(uart_callback_args_t * p_args);
 #endif
 
 /***********************************************************************************************************************
  * Private function prototypes
  **********************************************************************************************************************/
+
+static void r_sci_negate_de_pin(sci_uart_instance_ctrl_t const * const p_ctrl);
+
 #if (SCI_UART_CFG_PARAM_CHECKING_ENABLE)
 
 static fsp_err_t r_sci_read_write_param_check(sci_uart_instance_ctrl_t const * const p_ctrl,
                                               uint8_t const * const                  addr,
                                               uint32_t const                         bytes);
 
+#endif
+
+#if BSP_PERIPHERAL_IRDA_PRESENT
+ #if SCI_UART_CFG_IRDA_SUPPORT
+static void r_sci_irda_enable(sci_uart_extended_cfg_t const * const p_extended);
+static void r_sci_irda_disable(sci_uart_extended_cfg_t const * const p_extended);
+
+ #endif
 #endif
 
 static void r_sci_uart_config_set(sci_uart_instance_ctrl_t * const p_ctrl, uart_cfg_t const * const p_cfg);
@@ -223,12 +226,12 @@ void sci_uart_tei_isr(void);
  * Private global variables
  **********************************************************************************************************************/
 
-/** Name of module used by error logger macro */
+/* Name of module used by error logger macro */
 #if BSP_CFG_ERROR_LOG != 0
 static const char g_module_name[] = "sci_uart";
 #endif
 
-/** Baud rate divisor information (UART mode) */
+/* Baud rate divisor information (UART mode) */
 static const baud_setting_const_t g_async_baud[SCI_UART_NUM_DIVISORS_ASYNC] =
 {
     {0U, 0U, 1U, 0U},                  /* BGDM, ABCS, ABCSE, n */
@@ -263,16 +266,7 @@ static const uint16_t g_div_coefficient[SCI_UART_NUM_DIVISORS_ASYNC] =
     2048U,
 };
 
-/** SCI UART HAL module version data structure */
-static const fsp_version_t g_module_version =
-{
-    .api_version_minor  = UART_API_VERSION_MINOR,
-    .api_version_major  = UART_API_VERSION_MAJOR,
-    .code_version_major = SCI_UART_CODE_VERSION_MAJOR,
-    .code_version_minor = SCI_UART_CODE_VERSION_MINOR
-};
-
-/** UART on SCI HAL API mapping for UART interface */
+/* UART on SCI HAL API mapping for UART interface */
 const uart_api_t g_uart_on_sci =
 {
     .open               = R_SCI_UART_Open,
@@ -281,9 +275,9 @@ const uart_api_t g_uart_on_sci =
     .read               = R_SCI_UART_Read,
     .infoGet            = R_SCI_UART_InfoGet,
     .baudSet            = R_SCI_UART_BaudSet,
-    .versionGet         = R_SCI_UART_VersionGet,
     .communicationAbort = R_SCI_UART_Abort,
     .callbackSet        = R_SCI_UART_CallbackSet,
+    .readStop           = R_SCI_UART_ReadStop,
 };
 
 /*******************************************************************************************************************//**
@@ -302,8 +296,12 @@ const uart_api_t g_uart_on_sci =
  * @retval  FSP_SUCCESS                    Channel opened successfully.
  * @retval  FSP_ERR_ASSERTION              Pointer to UART control block or configuration structure is NULL.
  * @retval  FSP_ERR_IP_CHANNEL_NOT_PRESENT The requested channel does not exist on this MCU.
+ * @retval  FSP_ERR_INVALID_ARGUMENT       Flow control is enabled but flow control pin is not defined or selected channel
+ *                                         does not support "Hardware CTS and Hardware RTS" flow control.
+ *                                         (or) restricted channel is selected.
  * @retval  FSP_ERR_ALREADY_OPEN           Control block has already been opened or channel is being used by another
  *                                         instance. Call close() then open() to reconfigure.
+ * @retval  FSP_ERR_INVALID_CHANNEL        IrDA is requested for a channel that does not support IrDA.
  *
  * @return                       See @ref RENESAS_ERROR_CODES or functions called by this function for other possible
  *                               return codes. This function calls:
@@ -318,7 +316,7 @@ fsp_err_t R_SCI_UART_Open (uart_ctrl_t * const p_api_ctrl, uart_cfg_t const * co
     /* Check parameters. */
     FSP_ASSERT(p_ctrl);
     FSP_ASSERT(p_cfg);
-    FSP_ASSERT(p_cfg->p_callback);
+
     FSP_ASSERT(p_cfg->p_extend);
     FSP_ASSERT(((sci_uart_extended_cfg_t *) p_cfg->p_extend)->p_baud_setting);
     FSP_ERROR_RETURN(SCI_UART_OPEN != p_ctrl->open, FSP_ERR_ALREADY_OPEN);
@@ -326,11 +324,47 @@ fsp_err_t R_SCI_UART_Open (uart_ctrl_t * const p_api_ctrl, uart_cfg_t const * co
     /* Make sure this channel exists. */
     FSP_ERROR_RETURN(BSP_FEATURE_SCI_CHANNELS & (1U << p_cfg->channel), FSP_ERR_IP_CHANNEL_NOT_PRESENT);
 
+    if (((sci_uart_extended_cfg_t *) p_cfg->p_extend)->flow_control == SCI_UART_FLOW_CONTROL_CTSRTS)
+    {
+        FSP_ERROR_RETURN(
+            ((sci_uart_extended_cfg_t *) p_cfg->p_extend)->flow_control_pin != SCI_UART_INVALID_16BIT_PARAM,
+            FSP_ERR_INVALID_ARGUMENT);
+    }
+
+    if (((sci_uart_extended_cfg_t *) p_cfg->p_extend)->flow_control == SCI_UART_FLOW_CONTROL_HARDWARE_CTSRTS)
+    {
+        FSP_ERROR_RETURN((0U != (((1U << (p_cfg->channel)) & BSP_FEATURE_SCI_UART_CSTPEN_CHANNELS))),
+                         FSP_ERR_INVALID_ARGUMENT);
+    }
+
+ #if (SCI_UART_CFG_RS485_SUPPORT)
+    if (((sci_uart_extended_cfg_t *) p_cfg->p_extend)->rs485_setting.enable == SCI_UART_RS485_ENABLE)
+    {
+        FSP_ERROR_RETURN(
+            ((sci_uart_extended_cfg_t *) p_cfg->p_extend)->rs485_setting.de_control_pin != SCI_UART_INVALID_16BIT_PARAM,
+            FSP_ERR_INVALID_ARGUMENT);
+    }
+ #endif
+
+ #if BSP_PERIPHERAL_IRDA_PRESENT
+  #if SCI_UART_CFG_IRDA_SUPPORT
+    if (((sci_uart_extended_cfg_t *) p_cfg->p_extend)->irda_setting.ircr_bits_b.ire)
+    {
+        FSP_ERROR_RETURN(BSP_PERIPHERAL_IRDA_CHANNEL_MASK & (1 << p_cfg->channel), FSP_ERR_INVALID_CHANNEL);
+    }
+  #endif
+ #endif
+
     FSP_ASSERT(p_cfg->rxi_irq >= 0);
     FSP_ASSERT(p_cfg->txi_irq >= 0);
     FSP_ASSERT(p_cfg->tei_irq >= 0);
     FSP_ASSERT(p_cfg->eri_irq >= 0);
 #endif
+
+    /* Verify that the selected channel is not among the restricted channels when ABCSE is 1. Refer "Limitations" section of r_sci_uart module in FSP User Manual */
+    FSP_ERROR_RETURN(!((BSP_FEATURE_SCI_UART_ABCSE_RESTRICTED_CHANNELS & (1 << p_cfg->channel)) &&
+                       ((sci_uart_extended_cfg_t *) p_cfg->p_extend)->p_baud_setting->semr_baudrate_bits_b.abcse),
+                     FSP_ERR_INVALID_ARGUMENT);
 
     p_ctrl->p_reg = ((R_SCI0_Type *) (R_SCI0_BASE + (SCI_REG_SIZE * p_cfg->channel)));
 
@@ -346,11 +380,6 @@ fsp_err_t R_SCI_UART_Open (uart_ctrl_t * const p_api_ctrl, uart_cfg_t const * co
 
     p_ctrl->p_cfg = p_cfg;
 
-//#if BSP_TZ_SECURE_BUILD
-
-    /* If this is a secure build, the callback provided in p_cfg must be secure. */
-    //p_ctrl->callback_is_secure = true;
-//#endif
     p_ctrl->p_callback        = p_cfg->p_callback;
     p_ctrl->p_context         = p_cfg->p_context;
     p_ctrl->p_callback_memory = NULL;
@@ -372,7 +401,18 @@ fsp_err_t R_SCI_UART_Open (uart_ctrl_t * const p_api_ctrl, uart_cfg_t const * co
     FSP_ERROR_RETURN(FSP_SUCCESS == err, err);
 #endif
 
-    /* Enable the SCI channel and reset the registers to their initial state. */
+    /* Negate driver enable if RS-485 mode is enabled. */
+    r_sci_negate_de_pin(p_ctrl);
+
+#if BSP_PERIPHERAL_IRDA_PRESENT
+ #if SCI_UART_CFG_IRDA_SUPPORT
+
+    /* Set the IrDA configuration settings provided in ::sci_uart_extended_cfg_t. */
+    r_sci_irda_enable(p_cfg->p_extend);
+ #endif
+#endif
+
+    /* Enable the SCI channel */
     R_BSP_MODULE_START(FSP_IP_SCI, p_cfg->channel);
 
     /* Initialize registers as defined in section 34.3.7 "SCI Initialization in Asynchronous Mode" in the RA6M3 manual
@@ -422,40 +462,14 @@ fsp_err_t R_SCI_UART_Open (uart_ctrl_t * const p_api_ctrl, uart_cfg_t const * co
 #endif
     p_ctrl->p_reg->SCR = (uint8_t) scr;
 
-    p_ctrl->flow_pin = (bsp_io_port_pin_t) SCI_UART_INVALID_16BIT_PARAM;
+    p_ctrl->flow_pin = p_extend->flow_control_pin;
 
 #if SCI_UART_CFG_FLOW_CONTROL_SUPPORT
-    if (p_extend->flow_control_pin != SCI_UART_INVALID_16BIT_PARAM)
+    if (p_ctrl->flow_pin != SCI_UART_INVALID_16BIT_PARAM)
     {
-        p_ctrl->flow_pin = p_extend->flow_control_pin;
-        bsp_io_level_t level = (bsp_io_level_t) SCI_UART_INVALID_8BIT_PARAM;
-
-        if (p_extend->uart_mode == UART_MODE_RS485_FD)
-        {
-            level = BSP_IO_LEVEL_HIGH;
-        }
-
-        if (p_extend->uart_mode == UART_MODE_RS485_HD)
-        {
-            level = BSP_IO_LEVEL_LOW;
-        }
-
-        /* If external RTS operation is enabled at build time, call user provided RTS function to set initial RTS value
-         * to 0. */
-
-        /* If CTS/RTS flow control is enabled and an RTS flow control callback is provided, call the RTS flow control
-         * callback to assert the user GPIO RTS pin. */
-        if ((p_extend->uart_mode == UART_MODE_RS232) && (p_extend->ctsrts_en))
-        {
-            level = BSP_IO_LEVEL_LOW;
-        }
-
-        if (level != SCI_UART_INVALID_8BIT_PARAM)
-        {
-            R_BSP_PinAccessEnable();
-            R_BSP_PinWrite(p_ctrl->flow_pin, level);
-            R_BSP_PinAccessDisable();
-        }
+        R_BSP_PinAccessEnable();
+        R_BSP_PinWrite(p_ctrl->flow_pin, SCI_UART_FLOW_CONTROL_INACTIVE);
+        R_BSP_PinAccessDisable();
     }
 #endif
 
@@ -507,6 +521,17 @@ fsp_err_t R_SCI_UART_Close (uart_ctrl_t * const p_api_ctrl)
 
     /* Remove power to the channel. */
     R_BSP_MODULE_STOP(FSP_IP_SCI, p_ctrl->p_cfg->channel);
+
+    /* Negate driver enable if RS-485 mode is enabled. */
+    r_sci_negate_de_pin(p_ctrl);
+
+#if BSP_PERIPHERAL_IRDA_PRESENT
+ #if SCI_UART_CFG_IRDA_SUPPORT
+
+    /* To disable IrDA. */
+    r_sci_irda_disable(p_ctrl->p_cfg->p_extend);
+ #endif
+#endif
 
     return FSP_SUCCESS;
 }
@@ -603,6 +628,22 @@ fsp_err_t R_SCI_UART_Write (uart_ctrl_t * const p_api_ctrl, uint8_t const * cons
     FSP_ERROR_RETURN(0U == p_ctrl->tx_src_bytes, FSP_ERR_IN_USE);
  #endif
 
+ #if (SCI_UART_CFG_RS485_SUPPORT)
+    sci_uart_extended_cfg_t * p_extend = (sci_uart_extended_cfg_t *) p_ctrl->p_cfg->p_extend;
+
+    /* If RS-485 is enabled, then assert the driver enable pin at the start of a write transfer. */
+    if (p_extend->rs485_setting.enable)
+    {
+        R_BSP_PinAccessEnable();
+
+        bsp_io_level_t level = SCI_UART_RS485_DE_POLARITY_HIGH ==
+                               p_extend->rs485_setting.polarity ? BSP_IO_LEVEL_HIGH : BSP_IO_LEVEL_LOW;
+        R_BSP_PinWrite(p_extend->rs485_setting.de_control_pin, level);
+
+        R_BSP_PinAccessDisable();
+    }
+ #endif
+
     /* Transmit interrupts must be disabled to start with. */
     p_ctrl->p_reg->SCR &= (uint8_t) ~(SCI_SCR_TIE_MASK | SCI_SCR_TEIE_MASK);
 
@@ -644,16 +685,6 @@ fsp_err_t R_SCI_UART_Write (uart_ctrl_t * const p_api_ctrl, uint8_t const * cons
     }
  #endif
 
- #if SCI_UART_CFG_FLOW_CONTROL_SUPPORT
-    if ((((sci_uart_extended_cfg_t *) p_ctrl->p_cfg->p_extend)->uart_mode == UART_MODE_RS485_HD) &&
-        (p_ctrl->flow_pin != SCI_UART_INVALID_16BIT_PARAM))
-    {
-        R_BSP_PinAccessEnable();
-        R_BSP_PinWrite(p_ctrl->flow_pin, BSP_IO_LEVEL_HIGH);
-        R_BSP_PinAccessDisable();
-    }
- #endif
-
     /* Trigger a TXI interrupt. This triggers the transfer instance or a TXI interrupt if the transfer instance is
      * not used. */
     p_ctrl->p_reg->SCR |= SCI_SCR_TIE_MASK;
@@ -691,6 +722,7 @@ fsp_err_t R_SCI_UART_Write (uart_ctrl_t * const p_api_ctrl, uint8_t const * cons
  * @retval  FSP_SUCCESS                  Callback updated successfully.
  * @retval  FSP_ERR_ASSERTION            A required pointer is NULL.
  * @retval  FSP_ERR_NOT_OPEN             The control block has not been opened.
+ * @retval  FSP_ERR_NO_CALLBACK_MEMORY   p_callback is non-secure and p_callback_memory is either secure or NULL.
  **********************************************************************************************************************/
 fsp_err_t R_SCI_UART_CallbackSet (uart_ctrl_t * const          p_api_ctrl,
                                   void (                     * p_callback)(uart_callback_args_t *),
@@ -705,15 +737,28 @@ fsp_err_t R_SCI_UART_CallbackSet (uart_ctrl_t * const          p_api_ctrl,
     FSP_ERROR_RETURN(SCI_UART_OPEN == p_ctrl->open, FSP_ERR_NOT_OPEN);
 #endif
 
+#if BSP_TZ_SECURE_BUILD
+
+    /* Get security state of p_callback */
+    bool callback_is_secure =
+        (NULL == cmse_check_address_range((void *) p_callback, sizeof(void *), CMSE_AU_NONSECURE));
+
+ #if SCI_UART_CFG_PARAM_CHECKING_ENABLE
+
+    /* In secure projects, p_callback_memory must be provided in non-secure space if p_callback is non-secure */
+    uart_callback_args_t * const p_callback_memory_checked = cmse_check_pointed_object(p_callback_memory,
+                                                                                       CMSE_AU_NONSECURE);
+    FSP_ERROR_RETURN(callback_is_secure || (NULL != p_callback_memory_checked), FSP_ERR_NO_CALLBACK_MEMORY);
+ #endif
+#endif
+
     /* Store callback and context */
-
-//#if BSP_TZ_SECURE_BUILD
-
-    /* cmse_check_address_range returns NULL if p_callback is located in secure memory */
-    //p_ctrl->callback_is_secure =
-     //   (NULL == cmse_check_address_range((void *) p_callback, sizeof(void *), CMSE_AU_NONSECURE));
-//#endif
-    p_ctrl->p_callback        = p_callback;
+#if BSP_TZ_SECURE_BUILD
+    p_ctrl->p_callback = callback_is_secure ? p_callback :
+                         (void (*)(uart_callback_args_t *))cmse_nsfptr_create(p_callback);
+#else
+    p_ctrl->p_callback = p_callback;
+#endif
     p_ctrl->p_context         = p_context;
     p_ctrl->p_callback_memory = p_callback_memory;
 
@@ -729,7 +774,8 @@ fsp_err_t R_SCI_UART_CallbackSet (uart_ctrl_t * const          p_api_ctrl,
  * @retval  FSP_SUCCESS                  Baud rate was successfully changed.
  * @retval  FSP_ERR_ASSERTION            Pointer to UART control block is NULL or the UART is not configured to use the
  *                                       internal clock.
- * @retval  FSP_ERR_NOT_OPEN             The control block has not been opened
+ * @retval  FSP_ERR_NOT_OPEN             The control block has not been opened.
+ * @retval  FSP_ERR_INVALID_ARGUMENT     Restricted channel is selected.
  **********************************************************************************************************************/
 fsp_err_t R_SCI_UART_BaudSet (uart_ctrl_t * const p_api_ctrl, void const * const p_baud_setting)
 {
@@ -743,26 +789,24 @@ fsp_err_t R_SCI_UART_BaudSet (uart_ctrl_t * const p_api_ctrl, void const * const
     FSP_ASSERT((p_ctrl->p_reg->SCR_b.CKE & 0x2) == 0U);
 #endif
 
+    /* Verify that the selected channel is not among the restricted channels when ABCSE is 1. Refer "Limitations" section of r_sci_uart module in FSP User Manual */
+    FSP_ERROR_RETURN(!((BSP_FEATURE_SCI_UART_ABCSE_RESTRICTED_CHANNELS & (1 << p_ctrl->p_cfg->channel)) &&
+                       (((baud_setting_t *) p_baud_setting)->semr_baudrate_bits_b.abcse)),
+                     FSP_ERR_INVALID_ARGUMENT);
+
+    /* Save SCR configurations except transmit interrupts. Resuming transmission after reconfiguring baud settings is
+     * not supported. */
+    uint8_t preserved_scr = p_ctrl->p_reg->SCR & (uint8_t) ~(SCI_SCR_TIE_MASK | SCI_SCR_TEIE_MASK);
+
     /* Disables transmitter and receiver. This terminates any in-progress transmission. */
-    p_ctrl->p_reg->SCR &= (uint8_t) ~(SCI_SCR_TE_MASK | SCI_SCR_TIE_MASK | SCI_SCR_TEIE_MASK |
-                                      SCI_SCR_RE_MASK | SCI_SCR_RIE_MASK);
-    p_ctrl->p_tx_src = NULL;
+    p_ctrl->p_reg->SCR = preserved_scr & (uint8_t) ~(SCI_SCR_TE_MASK | SCI_SCR_RE_MASK | SCI_SCR_RIE_MASK);
+    p_ctrl->p_tx_src   = NULL;
 
     /* Apply new baud rate register settings. */
     r_sci_uart_baud_set(p_ctrl->p_reg, p_baud_setting);
 
-    uint32_t mask_enable = 0;
-#if (SCI_UART_CFG_RX_ENABLE)
-
-    /* Enable receive. */
-    mask_enable |= (SCI_SCR_RE_MASK | SCI_SCR_RIE_MASK);
-#endif
-#if (SCI_UART_CFG_TX_ENABLE)
-
-    /* Enable transmit. */
-    mask_enable |= SCI_SCR_TE_MASK;
-#endif
-    p_ctrl->p_reg->SCR |= (uint8_t) mask_enable;
+    /* Restore all settings except transmit interrupts. */
+    p_ctrl->p_reg->SCR = preserved_scr;
 
     return FSP_SUCCESS;
 }
@@ -867,15 +911,8 @@ fsp_err_t R_SCI_UART_Abort (uart_ctrl_t * const p_api_ctrl, uart_dir_t communica
  #endif
         p_ctrl->tx_src_bytes = 0U;
 
- #if SCI_UART_CFG_FLOW_CONTROL_SUPPORT
-        if ((((sci_uart_extended_cfg_t *) p_ctrl->p_cfg->p_extend)->uart_mode == UART_MODE_RS485_HD) &&
-            (p_ctrl->flow_pin != SCI_UART_INVALID_16BIT_PARAM))
-        {
-            R_BSP_PinAccessEnable();
-            R_BSP_PinWrite(p_ctrl->flow_pin, BSP_IO_LEVEL_LOW);
-            R_BSP_PinAccessDisable();
-        }
- #endif
+        /* Negate driver enable if RS-485 mode is enabled. */
+        r_sci_negate_de_pin(p_ctrl);
 
         FSP_ERROR_RETURN(FSP_SUCCESS == err, err);
     }
@@ -910,19 +947,67 @@ fsp_err_t R_SCI_UART_Abort (uart_ctrl_t * const p_api_ctrl, uart_dir_t communica
 }
 
 /*******************************************************************************************************************//**
+ * Provides API to abort ongoing read. Reception is still enabled after abort(). Any characters received after abort()
+ * and before the transfer is reset in the next call to read(), will arrive via the callback function with event
+ * UART_EVENT_RX_CHAR.
+ * Implements @ref uart_api_t::readStop
+ *
+ * @retval  FSP_SUCCESS                  UART transaction aborted successfully.
+ * @retval  FSP_ERR_ASSERTION            Pointer to UART control block is NULL.
+ * @retval  FSP_ERR_NOT_OPEN             The control block has not been opened.
+ * @retval  FSP_ERR_UNSUPPORTED          The requested Abort direction is unsupported.
+ *
+ * @return                       See @ref RENESAS_ERROR_CODES or functions called by this function for other possible
+ *                               return codes. This function calls:
+ *                                   * @ref transfer_api_t::disable
+ **********************************************************************************************************************/
+fsp_err_t R_SCI_UART_ReadStop (uart_ctrl_t * const p_api_ctrl, uint32_t * remaining_bytes)
+{
+    sci_uart_instance_ctrl_t * p_ctrl = (sci_uart_instance_ctrl_t *) p_api_ctrl;
+
+#if (SCI_UART_CFG_PARAM_CHECKING_ENABLE)
+    FSP_ASSERT(p_ctrl);
+    FSP_ERROR_RETURN(SCI_UART_OPEN == p_ctrl->open, FSP_ERR_NOT_OPEN);
+#endif
+
+#if (SCI_UART_CFG_RX_ENABLE)
+    *remaining_bytes      = p_ctrl->rx_dest_bytes;
+    p_ctrl->rx_dest_bytes = 0U;
+ #if SCI_UART_CFG_DTC_SUPPORTED
+    if (NULL != p_ctrl->p_cfg->p_transfer_rx)
+    {
+        fsp_err_t err = p_ctrl->p_cfg->p_transfer_rx->p_api->disable(p_ctrl->p_cfg->p_transfer_rx->p_ctrl);
+        FSP_ERROR_RETURN(FSP_SUCCESS == err, err);
+
+        transfer_properties_t transfer_info;
+        err = p_ctrl->p_cfg->p_transfer_rx->p_api->infoGet(p_ctrl->p_cfg->p_transfer_rx->p_ctrl, &transfer_info);
+        FSP_ERROR_RETURN(FSP_SUCCESS == err, err);
+        *remaining_bytes = transfer_info.transfer_length_remaining;
+    }
+ #endif
+#else
+
+    return FSP_ERR_UNSUPPORTED;
+#endif
+
+    return FSP_SUCCESS;
+}
+
+/*******************************************************************************************************************//**
  * Calculates baud rate register settings. Evaluates and determines the best possible settings set to the baud rate
  * related registers.
+ * @note For limitations of this API, refer to the 'Limitations' section of r_sci_uart module in FSP User Manual.
  *
  * @param[in]  baudrate                  Baud rate [bps]. For example, 19200, 57600, 115200, etc.
  * @param[in]  bitrate_modulation        Enable bitrate modulation
- * @param[in]  baud_rate_error_x_1000    &lt;baud_rate_percent_error&gt; x 1000 required for module to function.
- *                                       Absolute max baud_rate_error is 15000 (15%).
+ * @param[in]  baud_rate_error_x_1000    Max baud rate error. At most &lt;baud_rate_percent_error&gt; x 1000 required
+ *                                       for module to function. Absolute max baud_rate_error is 15000 (15%).
  * @param[out] p_baud_setting            Baud setting information stored here if successful
  *
  * @retval     FSP_SUCCESS               Baud rate is set successfully
  * @retval     FSP_ERR_ASSERTION         Null pointer
- * @retval     FSP_ERR_INVALID_ARGUMENT  Baud rate is '0', source clock frequency could not be read, or error in
- *                                       calculated baud rate is larger than 10%.
+ * @retval     FSP_ERR_INVALID_ARGUMENT  Baud rate is '0', error in calculated baud rate is larger than requested
+ *                                       max error, or requested max error in baud rate is larger than 15%.
  **********************************************************************************************************************/
 fsp_err_t R_SCI_UART_BaudCalculate (uint32_t               baudrate,
                                     bool                   bitrate_modulation,
@@ -931,12 +1016,12 @@ fsp_err_t R_SCI_UART_BaudCalculate (uint32_t               baudrate,
 {
 #if (SCI_UART_CFG_PARAM_CHECKING_ENABLE)
     FSP_ASSERT(p_baud_setting);
-    FSP_ERROR_RETURN(SCI_UART_MAX_BAUD_RATE_ERROR_X_1000 > baud_rate_error_x_1000, FSP_ERR_INVALID_ARGUMENT);
+    FSP_ERROR_RETURN(SCI_UART_MAX_BAUD_RATE_ERROR_X_1000 >= baud_rate_error_x_1000, FSP_ERR_INVALID_ARGUMENT);
     FSP_ERROR_RETURN((0U != baudrate), FSP_ERR_INVALID_ARGUMENT);
 #endif
 
-    p_baud_setting->brr  = SCI_UART_BRR_MAX;
-    p_baud_setting->brme = 0U;
+    p_baud_setting->brr = SCI_UART_BRR_MAX;
+    p_baud_setting->semr_baudrate_bits_b.brme = 0U;
     p_baud_setting->mddr = SCI_UART_MDDR_MIN;
 
     /* Find the best BRR (bit rate register) value.
@@ -946,7 +1031,7 @@ fsp_err_t R_SCI_UART_BaudCalculate (uint32_t               baudrate,
      *  BRR = (PCLK / (div_coefficient * baud)) - 1
      */
     int32_t  hit_bit_err = SCI_UART_100_PERCENT_X_1000;
-    uint32_t hit_mddr    = 0U;
+    uint8_t  hit_mddr    = 0U;
     uint32_t divisor     = 0U;
 
     uint32_t freq_hz = R_FSP_SystemClockHzGet(BSP_FEATURE_SCI_CLOCK);
@@ -1000,17 +1085,16 @@ fsp_err_t R_SCI_UART_BaudCalculate (uint32_t               baudrate,
                     int32_t bit_err = (int32_t) (((((int64_t) freq_hz) * SCI_UART_100_PERCENT_X_1000) /
                                                   err_divisor) - SCI_UART_100_PERCENT_X_1000);
 
-                    uint32_t mddr = 0U;
+                    uint8_t mddr = 0U;
                     if (bitrate_modulation)
                     {
                         /* Calculate the MDDR (M) value if bit rate modulation is enabled,
                          * The formula to calculate MBBR (from the M and N relationship given in the hardware manual) is as follows
-                         * and it must be between 128 and 256.
+                         * and it must be between 128 and 255.
                          * MDDR = ((div_coefficient * baud * 256) * (BRR + 1)) / PCLK */
-                        mddr = (uint32_t) err_divisor / (freq_hz / SCI_UART_MDDR_MAX);
+                        mddr = (uint8_t) ((uint32_t) err_divisor / (freq_hz / SCI_UART_MDDR_MAX));
 
-                        /* The maximum value that could result from the calculation above is 256, which is a valid MDDR
-                         * value, so only the lower bound is checked. */
+                        /* MDDR value must be greater than or equal to SCI_UART_MDDR_MIN. */
                         if (mddr < SCI_UART_MDDR_MIN)
                         {
                             break;
@@ -1034,19 +1118,19 @@ fsp_err_t R_SCI_UART_BaudCalculate (uint32_t               baudrate,
                      */
                     if (bit_err < hit_bit_err)
                     {
-                        p_baud_setting->bgdm  = g_async_baud[i].bgdm;
-                        p_baud_setting->abcs  = g_async_baud[i].abcs;
-                        p_baud_setting->abcse = g_async_baud[i].abcse;
-                        p_baud_setting->cks   = g_async_baud[i].cks;
-                        p_baud_setting->brr   = (uint8_t) temp_brr;
-                        hit_bit_err           = bit_err;
-                        hit_mddr              = mddr;
+                        p_baud_setting->semr_baudrate_bits_b.bgdm  = g_async_baud[i].bgdm;
+                        p_baud_setting->semr_baudrate_bits_b.abcs  = g_async_baud[i].abcs;
+                        p_baud_setting->semr_baudrate_bits_b.abcse = g_async_baud[i].abcse;
+                        p_baud_setting->cks = g_async_baud[i].cks;
+                        p_baud_setting->brr = (uint8_t) temp_brr;
+                        hit_bit_err         = bit_err;
+                        hit_mddr            = mddr;
                     }
 
                     if (bitrate_modulation)
                     {
-                        p_baud_setting->brme = 1U;
-                        p_baud_setting->mddr = (uint8_t) hit_mddr;
+                        p_baud_setting->semr_baudrate_bits_b.brme = 1U;
+                        p_baud_setting->mddr = hit_mddr;
                     }
                     else
                     {
@@ -1064,31 +1148,39 @@ fsp_err_t R_SCI_UART_BaudCalculate (uint32_t               baudrate,
 }
 
 /*******************************************************************************************************************//**
- * Provides API and code version in the user provided pointer. Implements @ref uart_api_t::versionGet
- *
- * @param[in] p_version   Version number set here
- *
- * @retval  FSP_SUCCESS                  Version information stored in provided p_version.
- * @retval  FSP_ERR_ASSERTION            p_version is NULL.
- **********************************************************************************************************************/
-fsp_err_t R_SCI_UART_VersionGet (fsp_version_t * p_version)
-{
-#if (SCI_UART_CFG_PARAM_CHECKING_ENABLE)
-    FSP_ASSERT(p_version);
-#endif
-
-    *p_version = g_module_version;
-
-    return FSP_SUCCESS;
-}
-
-/*******************************************************************************************************************//**
  * @} (end addtogroup SCI_UART)
  **********************************************************************************************************************/
 
 /***********************************************************************************************************************
  * Private Functions
  **********************************************************************************************************************/
+
+/*******************************************************************************************************************//**
+ * Negate the DE pin if it is enabled.
+ *
+ * @param[in] p_ctrl Pointer to the control block for the channel.
+ **********************************************************************************************************************/
+static void r_sci_negate_de_pin (sci_uart_instance_ctrl_t const * const p_ctrl)
+{
+#if (SCI_UART_CFG_RS485_SUPPORT)
+    sci_uart_extended_cfg_t * p_extend = (sci_uart_extended_cfg_t *) p_ctrl->p_cfg->p_extend;
+
+    /* If RS-485 is enabled, then negate the driver enable pin at the end of a write transfer. */
+    if (p_extend->rs485_setting.enable)
+    {
+        R_BSP_PinAccessEnable();
+
+        bsp_io_level_t level = SCI_UART_RS485_DE_POLARITY_HIGH ==
+                               p_extend->rs485_setting.polarity ? BSP_IO_LEVEL_LOW : BSP_IO_LEVEL_HIGH;
+        R_BSP_PinWrite(p_extend->rs485_setting.de_control_pin, level);
+
+        R_BSP_PinAccessDisable();
+    }
+
+#else
+    FSP_PARAMETER_NOT_USED(p_ctrl);
+#endif
+}
 
 #if (SCI_UART_CFG_PARAM_CHECKING_ENABLE)
 
@@ -1166,7 +1258,7 @@ static fsp_err_t r_sci_uart_transfer_configure (sci_uart_instance_ctrl_t * const
 
     if (UART_DATA_BITS_9 == p_ctrl->p_cfg->data_bits)
     {
-        p_info->size = TRANSFER_SIZE_2_BYTE;
+        p_info->transfer_settings_word_b.size = TRANSFER_SIZE_2_BYTE;
 
         /* Casting for compatibility with 7 or 8 bit mode. */
         *p_transfer_reg = sci_buffer_address + SCI_UART_9BIT_TRANSFER_BUFFER_OFFSET;
@@ -1243,6 +1335,46 @@ static fsp_err_t r_sci_uart_transfer_open (sci_uart_instance_ctrl_t * const p_ct
 
 #endif
 
+#if BSP_PERIPHERAL_IRDA_PRESENT
+ #if SCI_UART_CFG_IRDA_SUPPORT
+
+/*******************************************************************************************************************//**
+ * Init IrDA module based on user configurations.
+ *
+ * @param[in]     p_extended   Pointer to extended settings
+ **********************************************************************************************************************/
+static void r_sci_irda_enable (sci_uart_extended_cfg_t const * const p_extended)
+{
+    /* The ire bit should only be set for the channel that is IrDA capable */
+    if (p_extended->irda_setting.ircr_bits_b.ire)
+    {
+        /* Enable the IrDA interface */
+        R_BSP_MODULE_START(FSP_IP_IRDA, 0);
+
+        R_IRDA->IRCR = p_extended->irda_setting.ircr_bits;
+    }
+}
+
+/*******************************************************************************************************************//**
+ * Stop IrDA module.
+ *
+ * @param[in]     p_extended   Pointer to extended settings
+ **********************************************************************************************************************/
+static void r_sci_irda_disable (sci_uart_extended_cfg_t const * const p_extended)
+{
+    /* Only disable IrDA interface on the channel it is enabled. */
+    if (p_extended->irda_setting.ircr_bits_b.ire)
+    {
+        /* Don't need to clear IRCR as interface is to be disabled. */
+
+        /* Disable the IrDA interface */
+        R_BSP_MODULE_STOP(FSP_IP_IRDA, 0);
+    }
+}
+
+ #endif
+#endif
+
 /*******************************************************************************************************************//**
  * Configures UART related registers based on user configurations.
  *
@@ -1300,8 +1432,17 @@ static void r_sci_uart_config_set (sci_uart_instance_ctrl_t * const p_ctrl, uart
 
     sci_uart_extended_cfg_t * p_extend = (sci_uart_extended_cfg_t *) p_cfg->p_extend;
 
-    /* Configure CTS flow control if CTS/RTS flow control is enabled. */
-    p_ctrl->p_reg->SPMR = (uint8_t) (p_extend->ctsrts_en << SCI_UART_SPMR_CTSE_OFFSET);
+    /* Configure flow control if CTS/RTS flow control is enabled. */
+#if BSP_FEATURE_SCI_UART_CSTPEN_CHANNELS
+    if (p_extend->flow_control == SCI_UART_FLOW_CONTROL_HARDWARE_CTSRTS)
+    {
+        p_ctrl->p_reg->SPMR = R_SCI0_SPMR_CSTPEN_Msk | R_SCI0_SPMR_CTSE_Msk;
+    }
+    else
+#endif
+    {
+        p_ctrl->p_reg->SPMR = ((uint8_t) (p_extend->flow_control << R_SCI0_SPMR_CTSE_Pos) & R_SCI0_SPMR_CTSE_Msk);
+    }
 
     uint32_t semr = 0;
 
@@ -1501,26 +1642,26 @@ static void r_sci_uart_call_callback (sci_uart_instance_ctrl_t * p_ctrl, uint32_
     p_args->event     = event;
     p_args->p_context = p_ctrl->p_context;
 
-//#if BSP_TZ_SECURE_BUILD
+#if BSP_TZ_SECURE_BUILD
 
     /* p_callback can point to a secure function or a non-secure function. */
-    //if (p_ctrl->callback_is_secure)
-    //{
+    if (!cmse_is_nsfptr(p_ctrl->p_callback))
+    {
         /* If p_callback is secure, then the project does not need to change security state. */
-      //  p_ctrl->p_callback(p_args);
-    //}
-    //else
-    //{
+        p_ctrl->p_callback(p_args);
+    }
+    else
+    {
         /* If p_callback is Non-secure, then the project must change to Non-secure state in order to call the callback. */
-      //  sci_uart_prv_ns_callback p_callback = (sci_uart_prv_ns_callback) (p_ctrl->p_callback);
-        //p_callback(p_args);
-    //}
+        sci_uart_prv_ns_callback p_callback = (sci_uart_prv_ns_callback) (p_ctrl->p_callback);
+        p_callback(p_args);
+    }
 
-//#else
+#else
 
     /* If the project is not Trustzone Secure, then it will never need to change security state in order to call the callback. */
     p_ctrl->p_callback(p_args);
-//#endif
+#endif
     if (NULL != p_ctrl->p_callback_memory)
     {
         /* Restore callback memory in case this is a nested interrupt. */
@@ -1539,7 +1680,7 @@ static void r_sci_uart_call_callback (sci_uart_instance_ctrl_t * p_ctrl, uint32_
 void sci_uart_txi_isr (void)
 {
     /* Save context if RTOS is used */
-    FSP_CONTEXT_SAVE;
+    FSP_CONTEXT_SAVE
 
     IRQn_Type irq = R_FSP_CurrentIrqGet();
 
@@ -1553,26 +1694,6 @@ void sci_uart_txi_isr (void)
     {
         /* Write the data to the FIFO if the channel has a FIFO.  Otherwise write data based on size to the transmit
          * register.  Write to 16-bit TDRHL for 9-bit data, or 8-bit TDR otherwise. */
-        if (
- #if SCI_UART_CFG_FIFO_SUPPORT
-            (p_ctrl->fifo_depth > 0U) ||
- #endif
-            (2U == p_ctrl->data_bytes))
-        {
-            /* Write data to FTDRHLx register */
-            p_ctrl->p_reg->FTDRHL = *((uint16_t *) (p_ctrl->p_tx_src)) | (uint16_t) ~(SCI_UART_FIFO_DAT_MASK);
-        }
-        else
-        {
-            /* Write 1byte (uint8_t) data to (uint8_t) data register */
-            p_ctrl->p_reg->TDR = *(p_ctrl->p_tx_src);
-        }
-
-        /* Update pointer to the next data and number of remaining bytes in the control block. */
-        p_ctrl->tx_src_bytes -= p_ctrl->data_bytes;
-        p_ctrl->p_tx_src     += p_ctrl->data_bytes;
-
-        /* If transfer is not used, write data until FIFO is full. */
  #if SCI_UART_CFG_FIFO_SUPPORT
         if (0U != p_ctrl->fifo_depth)
         {
@@ -1594,9 +1715,31 @@ void sci_uart_txi_isr (void)
             }
 
             /* Clear TDFE flag */
-            p_ctrl->p_reg->SSR_FIFO_b.TDFE = 0U;
+            /* Don't acess the flag via bit fields because bit 1 is reserved. It must be written as '1' and has an */
+            /* undefined read value. Bit fields will attempt to do a read-modify-write which could have unintended */
+            /* side effects provided the undefined read behavior. */
+            uint8_t ssr_fifo =
+                (uint8_t) ((p_ctrl->p_reg->SSR_FIFO | SCI_SSR_FIFO_RESERVED_MASK) & ~R_SCI0_SSR_FIFO_TDFE_Msk);
+            p_ctrl->p_reg->SSR_FIFO = ssr_fifo;
         }
+        else
  #endif
+        {
+            if ((2U == p_ctrl->data_bytes))
+            {
+                /* Write 16-bit data to TDRHL register */
+                p_ctrl->p_reg->TDRHL = *((uint16_t *) (p_ctrl->p_tx_src)) | (uint16_t) ~(SCI_UART_FIFO_DAT_MASK);
+            }
+            else
+            {
+                /* Write 1byte (uint8_t) data to (uint8_t) data register */
+                p_ctrl->p_reg->TDR = *(p_ctrl->p_tx_src);
+            }
+
+            /* Update pointer to the next data and number of remaining bytes in the control block. */
+            p_ctrl->tx_src_bytes -= p_ctrl->data_bytes;
+            p_ctrl->p_tx_src     += p_ctrl->data_bytes;
+        }
     }
 
     if (0U == p_ctrl->tx_src_bytes)
@@ -1608,11 +1751,16 @@ void sci_uart_txi_isr (void)
         p_ctrl->p_reg->SCR = scr_temp;
 
         p_ctrl->p_tx_src = NULL;
-        r_sci_uart_call_callback(p_ctrl, 0U, UART_EVENT_TX_DATA_EMPTY);
+
+        /* If a callback was provided, call it with the argument */
+        if (NULL != p_ctrl->p_callback)
+        {
+            r_sci_uart_call_callback(p_ctrl, 0U, UART_EVENT_TX_DATA_EMPTY);
+        }
     }
 
     /* Restore context if RTOS is used */
-    FSP_CONTEXT_RESTORE;
+    FSP_CONTEXT_RESTORE
 }
 
 #endif
@@ -1629,13 +1777,13 @@ void sci_uart_txi_isr (void)
  * This interrupt also calls the callback function for RTS pin control if it is registered in R_SCI_UART_Open(). This is
  * special functionality to expand SCI hardware capability and make RTS/CTS hardware flow control possible. If macro
  * 'SCI_UART_CFG_FLOW_CONTROL_SUPPORT' is set, it is called at the beginning in this function to set the RTS pin high,
- * then it is it is called again just before leaving this function to set the RTS pin low.
+ * then it is called again just before leaving this function to set the RTS pin low.
  * @retval    none
  **********************************************************************************************************************/
 void sci_uart_rxi_isr (void)
 {
     /* Save context if RTOS is used */
-    FSP_CONTEXT_SAVE;
+    FSP_CONTEXT_SAVE
 
     IRQn_Type irq = R_FSP_CurrentIrqGet();
 
@@ -1650,11 +1798,12 @@ void sci_uart_rxi_isr (void)
  #endif
     {
  #if (SCI_UART_CFG_FLOW_CONTROL_SUPPORT)
-        if ((((sci_uart_extended_cfg_t *) p_ctrl->p_cfg->p_extend)->uart_mode == UART_MODE_RS232) &&
-            (p_ctrl->flow_pin != SCI_UART_INVALID_16BIT_PARAM))
+        if (p_ctrl->flow_pin != SCI_UART_INVALID_16BIT_PARAM)
         {
             R_BSP_PinAccessEnable();
-            R_BSP_PinWrite(p_ctrl->flow_pin, BSP_IO_LEVEL_HIGH);
+
+            /* Pause the transmission of data from the other device. */
+            R_BSP_PinWrite(p_ctrl->flow_pin, SCI_UART_FLOW_CONTROL_ACTIVE);
         }
  #endif
 
@@ -1688,8 +1837,12 @@ void sci_uart_rxi_isr (void)
 
             if (0 == p_ctrl->rx_dest_bytes)
             {
-                /* Call user callback with the data. */
-                r_sci_uart_call_callback(p_ctrl, data, UART_EVENT_RX_CHAR);
+                /* If a callback was provided, call it with the argument */
+                if (NULL != p_ctrl->p_callback)
+                {
+                    /* Call user callback with the data. */
+                    r_sci_uart_call_callback(p_ctrl, data, UART_EVENT_RX_CHAR);
+                }
             }
             else
             {
@@ -1699,7 +1852,11 @@ void sci_uart_rxi_isr (void)
 
                 if (0 == p_ctrl->rx_dest_bytes)
                 {
-                    r_sci_uart_call_callback(p_ctrl, 0U, UART_EVENT_RX_COMPLETE);
+                    /* If a callback was provided, call it with the argument */
+                    if (NULL != p_ctrl->p_callback)
+                    {
+                        r_sci_uart_call_callback(p_ctrl, 0U, UART_EVENT_RX_COMPLETE);
+                    }
                 }
             }
 
@@ -1715,10 +1872,10 @@ void sci_uart_rxi_isr (void)
         }
  #endif
  #if (SCI_UART_CFG_FLOW_CONTROL_SUPPORT)
-        if ((((sci_uart_extended_cfg_t *) p_ctrl->p_cfg->p_extend)->uart_mode == UART_MODE_RS232) &&
-            (p_ctrl->flow_pin != SCI_UART_INVALID_16BIT_PARAM))
+        if (p_ctrl->flow_pin != SCI_UART_INVALID_16BIT_PARAM)
         {
-            R_BSP_PinWrite(p_ctrl->flow_pin, BSP_IO_LEVEL_LOW);
+            /* Resume the transmission of data from the other device. */
+            R_BSP_PinWrite(p_ctrl->flow_pin, SCI_UART_FLOW_CONTROL_INACTIVE);
             R_BSP_PinAccessDisable();
         }
  #endif
@@ -1731,13 +1888,17 @@ void sci_uart_rxi_isr (void)
 
         p_ctrl->p_rx_dest = NULL;
 
-        /* Call callback */
-        r_sci_uart_call_callback(p_ctrl, 0U, UART_EVENT_RX_COMPLETE);
+        /* If a callback was provided, call it with the argument */
+        if (NULL != p_ctrl->p_callback)
+        {
+            /* Call callback */
+            r_sci_uart_call_callback(p_ctrl, 0U, UART_EVENT_RX_COMPLETE);
+        }
     }
  #endif
 
     /* Restore context if RTOS is used */
-    FSP_CONTEXT_RESTORE;
+    FSP_CONTEXT_RESTORE
 }
 
 #endif
@@ -1752,7 +1913,7 @@ void sci_uart_rxi_isr (void)
 void sci_uart_tei_isr (void)
 {
     /* Save context if RTOS is used */
-    FSP_CONTEXT_SAVE;
+    FSP_CONTEXT_SAVE
 
     IRQn_Type irq = R_FSP_CurrentIrqGet();
 
@@ -1762,23 +1923,20 @@ void sci_uart_tei_isr (void)
     /* Receiving TEI(transmit end interrupt) means the completion of transmission, so call callback function here. */
     p_ctrl->p_reg->SCR &= (uint8_t) ~(SCI_SCR_TIE_MASK | SCI_SCR_TEIE_MASK);
 
-    r_sci_uart_call_callback(p_ctrl, 0U, UART_EVENT_TX_COMPLETE);
+    /* Negate driver enable if RS-485 mode is enabled. */
+    r_sci_negate_de_pin(p_ctrl);
+
+    /* If a callback was provided, call it with the argument */
+    if (NULL != p_ctrl->p_callback)
+    {
+        r_sci_uart_call_callback(p_ctrl, 0U, UART_EVENT_TX_COMPLETE);
+    }
 
     /* Clear pending IRQ to make sure it doesn't fire again after exiting */
     R_BSP_IrqStatusClear(irq);
 
- #if SCI_UART_CFG_FLOW_CONTROL_SUPPORT
-    if ((((sci_uart_extended_cfg_t *) p_ctrl->p_cfg->p_extend)->uart_mode == UART_MODE_RS485_HD) &&
-        (p_ctrl->flow_pin != SCI_UART_INVALID_16BIT_PARAM))
-    {
-        R_BSP_PinAccessEnable();
-        R_BSP_PinWrite(p_ctrl->flow_pin, BSP_IO_LEVEL_LOW);
-        R_BSP_PinAccessDisable();
-    }
- #endif
-
     /* Restore context if RTOS is used */
-    FSP_CONTEXT_RESTORE;
+    FSP_CONTEXT_RESTORE
 }
 
 #endif
@@ -1830,8 +1988,15 @@ void sci_uart_eri_isr (void)
     /* Clear error condition. */
     p_ctrl->p_reg->SSR &= (uint8_t) (~SCI_RCVR_ERR_MASK);
 
-    /* Call callback. */
-    r_sci_uart_call_callback(p_ctrl, data, event);
+    /* Negate driver enable if RS-485 mode is enabled. */
+    r_sci_negate_de_pin(p_ctrl);
+
+    /* If a callback was provided, call it with the argument */
+    if (NULL != p_ctrl->p_callback)
+    {
+        /* Call callback. */
+        r_sci_uart_call_callback(p_ctrl, data, event);
+    }
 
     /* Clear pending IRQ to make sure it doesn't fire again after exiting */
     R_BSP_IrqStatusClear(irq);

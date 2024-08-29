@@ -17,32 +17,8 @@
 
 #include "pal_nvmem.h"
 
-const flash_cfg_t g_flash0_cfg =
-{ .data_flash_bgo = false, .p_callback = NULL, .p_context = NULL,
-  .irq = ((IRQn_Type) - 33), /*VECTOR_NUMBER_FCU_FRDYI,*/
-  .err_irq = (0x00U), /*VECTOR_NUMBER_FCU_FIFERR,*/
-  .err_ipl = (0x00U),
-  .ipl = (0x05U)/*(0xFFU)*/, };
-
-flash_hp_instance_ctrl_t g_flash0_ctrl =
-{
-    .opened = 0x4f50454e,
-    .p_callback = NULL,
-    .p_cfg = &g_flash0_cfg,
-    .timeout_write_cf = 0x8094a,
-    .timeout_write_df = 0x1eeca,
-    .timeout_dbfull = 0x42,
-    .timeout_blank_check = 0xaf0,
-    .timeout_write_config = 0x9c25f5,
-    .timeout_erase_cf_small_block = 0x843e2a,
-    .timeout_erase_cf_large_block = 0x210f8aa,
-    .timeout_erase_df_block = 0x927c0,
-    .current_operation = 0x0,
-};
-
 /* Instance structure to use this module. */
-const flash_instance_t g_flash0 =
-{ .p_ctrl = &g_flash0_ctrl, .p_cfg = &g_flash0_cfg, .p_api = &g_flash_on_flash_hp };
+extern const flash_instance_t g_flash0;
 
 /**
     @brief    - Writes into given non-volatile address.

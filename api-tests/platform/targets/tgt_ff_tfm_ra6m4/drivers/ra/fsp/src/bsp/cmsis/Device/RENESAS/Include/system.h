@@ -1,4 +1,8 @@
-/* ${REA_DISCLAIMER_PLACEHOLDER} */
+/*
+* Copyright (c) 2020 - 2024 Renesas Electronics Corporation and/or its affiliates
+*
+* SPDX-License-Identifier: BSD-3-Clause
+*/
 
 #ifndef SYSTEM_RENESAS_ARM_H
  #define SYSTEM_RENESAS_ARM_H

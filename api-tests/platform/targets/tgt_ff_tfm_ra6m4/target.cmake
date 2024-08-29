@@ -70,12 +70,8 @@ list(APPEND PAL_DRIVER_INCLUDE_PATHS
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/nvmem
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/uart
 	${PSA_ROOT_DIR}/platform/drivers/watchdog/cmsdk
-	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/arm/CMSIS_5/CMSIS/Core/Include
+	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/arm/CMSIS_6/CMSIS/Core/Include
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/board/ra6m4_ek
-	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/CMSIS/Core/Include
-	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/Device/Config
-	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/Device/Include
-	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/Device/Source
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/inc
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/inc/api
 	${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_ra6m4/drivers/ra/fsp/inc/instances

@@ -1,22 +1,8 @@
-/***********************************************************************************************************************
- * Copyright [2020] Renesas Electronics Corporation and/or its affiliates.  All Rights Reserved.
- *
- * This software and documentation are supplied by Renesas Electronics America Inc. and may only be used with products
- * of Renesas Electronics Corp. and its affiliates ("Renesas").  No other uses are authorized.  Renesas products are
- * sold pursuant to Renesas terms and conditions of sale.  Purchasers are solely responsible for the selection and use
- * of Renesas products and Renesas assumes no liability.  No license, express or implied, to any intellectual property
- * right is granted by Renesas. This software is protected under all applicable laws, including copyright laws. Renesas
- * reserves the right to change or discontinue this software and/or this documentation. THE SOFTWARE AND DOCUMENTATION
- * IS DELIVERED TO YOU "AS IS," AND RENESAS MAKES NO REPRESENTATIONS OR WARRANTIES, AND TO THE FULLEST EXTENT
- * PERMISSIBLE UNDER APPLICABLE LAW, DISCLAIMS ALL WARRANTIES, WHETHER EXPLICITLY OR IMPLICITLY, INCLUDING WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT, WITH RESPECT TO THE SOFTWARE OR
- * DOCUMENTATION.  RENESAS SHALL HAVE NO LIABILITY ARISING OUT OF ANY SECURITY VULNERABILITY OR BREACH.  TO THE MAXIMUM
- * EXTENT PERMITTED BY LAW, IN NO EVENT WILL RENESAS BE LIABLE TO YOU IN CONNECTION WITH THE SOFTWARE OR DOCUMENTATION
- * (OR ANY PERSON OR ENTITY CLAIMING RIGHTS DERIVED FROM YOU) FOR ANY LOSS, DAMAGES, OR CLAIMS WHATSOEVER, INCLUDING,
- * WITHOUT LIMITATION, ANY DIRECT, CONSEQUENTIAL, SPECIAL, INDIRECT, PUNITIVE, OR INCIDENTAL DAMAGES; ANY LOST PROFITS,
- * OTHER ECONOMIC DAMAGE, PROPERTY DAMAGE, OR PERSONAL INJURY; AND EVEN IF RENESAS HAS BEEN ADVISED OF THE POSSIBILITY
- * OF SUCH LOSS, DAMAGES, CLAIMS OR COSTS.
- **********************************************************************************************************************/
+/*
+* Copyright (c) 2020 - 2024 Renesas Electronics Corporation and/or its affiliates
+*
+* SPDX-License-Identifier: BSD-3-Clause
+*/
 
 /*******************************************************************************************************************//**
  * @addtogroup IOPORT
@@ -35,13 +21,16 @@
 FSP_HEADER
 
 #include "r_ioport_api.h"
-#include "r_ioport_cfg.h"
+#if __has_include("r_ioport_cfg.h")
+ #include "r_ioport_cfg.h"
+#endif
 
 /***********************************************************************************************************************
  * Macro definitions
  **********************************************************************************************************************/
-#define IOPORT_CODE_VERSION_MAJOR    (1U)
-#define IOPORT_CODE_VERSION_MINOR    (1U)
+
+/* Private definition to set enumeration values. */
+#define IOPORT_PRV_PFS_PSEL_OFFSET    (24)
 
 /***********************************************************************************************************************
  * Typedef definitions
@@ -261,7 +250,233 @@ typedef enum e_ioport_port_pin_t
     IOPORT_PORT_11_PIN_13 = 0x0B0D,    ///< IO port 11 pin 13
     IOPORT_PORT_11_PIN_14 = 0x0B0E,    ///< IO port 11 pin 14
     IOPORT_PORT_11_PIN_15 = 0x0B0F,    ///< IO port 11 pin 15
+
+    IOPORT_PORT_12_PIN_00 = 0x0C00,    ///< IO port 12 pin 0
+    IOPORT_PORT_12_PIN_01 = 0x0C01,    ///< IO port 12 pin 1
+    IOPORT_PORT_12_PIN_02 = 0x0C02,    ///< IO port 12 pin 2
+    IOPORT_PORT_12_PIN_03 = 0x0C03,    ///< IO port 12 pin 3
+    IOPORT_PORT_12_PIN_04 = 0x0C04,    ///< IO port 12 pin 4
+    IOPORT_PORT_12_PIN_05 = 0x0C05,    ///< IO port 12 pin 5
+    IOPORT_PORT_12_PIN_06 = 0x0C06,    ///< IO port 12 pin 6
+    IOPORT_PORT_12_PIN_07 = 0x0C07,    ///< IO port 12 pin 7
+    IOPORT_PORT_12_PIN_08 = 0x0C08,    ///< IO port 12 pin 8
+    IOPORT_PORT_12_PIN_09 = 0x0C09,    ///< IO port 12 pin 9
+    IOPORT_PORT_12_PIN_10 = 0x0C0A,    ///< IO port 12 pin 10
+    IOPORT_PORT_12_PIN_11 = 0x0C0B,    ///< IO port 12 pin 11
+    IOPORT_PORT_12_PIN_12 = 0x0C0C,    ///< IO port 12 pin 12
+    IOPORT_PORT_12_PIN_13 = 0x0C0D,    ///< IO port 12 pin 13
+    IOPORT_PORT_12_PIN_14 = 0x0C0E,    ///< IO port 12 pin 14
+    IOPORT_PORT_12_PIN_15 = 0x0C0F,    ///< IO port 12 pin 15
+
+    IOPORT_PORT_13_PIN_00 = 0x0D00,    ///< IO port 13 pin 0
+    IOPORT_PORT_13_PIN_01 = 0x0D01,    ///< IO port 13 pin 1
+    IOPORT_PORT_13_PIN_02 = 0x0D02,    ///< IO port 13 pin 2
+    IOPORT_PORT_13_PIN_03 = 0x0D03,    ///< IO port 13 pin 3
+    IOPORT_PORT_13_PIN_04 = 0x0D04,    ///< IO port 13 pin 4
+    IOPORT_PORT_13_PIN_05 = 0x0D05,    ///< IO port 13 pin 5
+    IOPORT_PORT_13_PIN_06 = 0x0D06,    ///< IO port 13 pin 6
+    IOPORT_PORT_13_PIN_07 = 0x0D07,    ///< IO port 13 pin 7
+    IOPORT_PORT_13_PIN_08 = 0x0D08,    ///< IO port 13 pin 8
+    IOPORT_PORT_13_PIN_09 = 0x0D09,    ///< IO port 13 pin 9
+    IOPORT_PORT_13_PIN_10 = 0x0D0A,    ///< IO port 13 pin 10
+    IOPORT_PORT_13_PIN_11 = 0x0D0B,    ///< IO port 13 pin 11
+    IOPORT_PORT_13_PIN_12 = 0x0D0C,    ///< IO port 13 pin 12
+    IOPORT_PORT_13_PIN_13 = 0x0D0D,    ///< IO port 13 pin 13
+    IOPORT_PORT_13_PIN_14 = 0x0D0E,    ///< IO port 13 pin 14
+    IOPORT_PORT_13_PIN_15 = 0x0D0F,    ///< IO port 13 pin 15
+
+    IOPORT_PORT_14_PIN_00 = 0x0E00,    ///< IO port 14 pin 0
+    IOPORT_PORT_14_PIN_01 = 0x0E01,    ///< IO port 14 pin 1
+    IOPORT_PORT_14_PIN_02 = 0x0E02,    ///< IO port 14 pin 2
+    IOPORT_PORT_14_PIN_03 = 0x0E03,    ///< IO port 14 pin 3
+    IOPORT_PORT_14_PIN_04 = 0x0E04,    ///< IO port 14 pin 4
+    IOPORT_PORT_14_PIN_05 = 0x0E05,    ///< IO port 14 pin 5
+    IOPORT_PORT_14_PIN_06 = 0x0E06,    ///< IO port 14 pin 6
+    IOPORT_PORT_14_PIN_07 = 0x0E07,    ///< IO port 14 pin 7
+    IOPORT_PORT_14_PIN_08 = 0x0E08,    ///< IO port 14 pin 8
+    IOPORT_PORT_14_PIN_09 = 0x0E09,    ///< IO port 14 pin 9
+    IOPORT_PORT_14_PIN_10 = 0x0E0A,    ///< IO port 14 pin 10
+    IOPORT_PORT_14_PIN_11 = 0x0E0B,    ///< IO port 14 pin 11
+    IOPORT_PORT_14_PIN_12 = 0x0E0C,    ///< IO port 14 pin 12
+    IOPORT_PORT_14_PIN_13 = 0x0E0D,    ///< IO port 14 pin 13
+    IOPORT_PORT_14_PIN_14 = 0x0E0E,    ///< IO port 14 pin 14
+    IOPORT_PORT_14_PIN_15 = 0x0E0F,    ///< IO port 14 pin 15
 } ioport_port_pin_t;
+
+#ifndef BSP_OVERRIDE_IOPORT_PERIPHERAL_T
+
+/** Superset of all peripheral functions.  */
+typedef enum e_ioport_peripheral
+{
+    /** Pin will functions as an IO pin */
+    IOPORT_PERIPHERAL_IO = 0x00,
+
+    /** Pin will function as a DEBUG pin */
+    IOPORT_PERIPHERAL_DEBUG = (0x00UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as an AGT peripheral pin */
+    IOPORT_PERIPHERAL_AGT = (0x01UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as an AGT peripheral pin */
+    IOPORT_PERIPHERAL_AGTW = (0x01UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as an AGT peripheral pin */
+    IOPORT_PERIPHERAL_AGT1 = (0x18UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a GPT peripheral pin */
+    IOPORT_PERIPHERAL_GPT0 = (0x02UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a GPT peripheral pin */
+    IOPORT_PERIPHERAL_GPT1 = (0x03UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as an SCI peripheral pin */
+    IOPORT_PERIPHERAL_SCI0_2_4_6_8 = (0x04UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as an SCI peripheral pin */
+    IOPORT_PERIPHERAL_SCI1_3_5_7_9 = (0x05UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a SPI peripheral pin */
+    IOPORT_PERIPHERAL_SPI = (0x06UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a IIC peripheral pin */
+    IOPORT_PERIPHERAL_IIC = (0x07UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a KEY peripheral pin */
+    IOPORT_PERIPHERAL_KEY = (0x08UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a clock/comparator/RTC peripheral pin */
+    IOPORT_PERIPHERAL_CLKOUT_COMP_RTC = (0x09UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a CAC/ADC peripheral pin */
+    IOPORT_PERIPHERAL_CAC_AD = (0x0AUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a BUS peripheral pin */
+    IOPORT_PERIPHERAL_BUS = (0x0BUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a CTSU peripheral pin */
+    IOPORT_PERIPHERAL_CTSU = (0x0CUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a CMPHS peripheral pin */
+    IOPORT_PERIPHERAL_ACMPHS = (0x0CUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a segment LCD peripheral pin */
+    IOPORT_PERIPHERAL_LCDC = (0x0DUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+ #if BSP_FEATURE_SCI_UART_DE_IS_INVERTED
+
+    /** Pin will function as an SCI peripheral DEn pin */
+    IOPORT_PERIPHERAL_DE_SCI1_3_5_7_9 = (0x0DUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as an SCI DEn peripheral pin */
+    IOPORT_PERIPHERAL_DE_SCI0_2_4_6_8 = (0x0EUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+ #else
+
+    /** Pin will function as an SCI peripheral DEn pin */
+    IOPORT_PERIPHERAL_DE_SCI0_2_4_6_8 = (0x0DUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as an SCI DEn peripheral pin */
+    IOPORT_PERIPHERAL_DE_SCI1_3_5_7_9 = (0x0EUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+ #endif
+
+    /** Pin will function as a DALI peripheral pin */
+    IOPORT_PERIPHERAL_DALI = (0x0EUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a CEU peripheral pin */
+    IOPORT_PERIPHERAL_CEU = (0x0FUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a CAN peripheral pin */
+    IOPORT_PERIPHERAL_CAN = (0x10UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a QSPI peripheral pin */
+    IOPORT_PERIPHERAL_QSPI = (0x11UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as an SSI peripheral pin */
+    IOPORT_PERIPHERAL_SSI = (0x12UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a USB full speed peripheral pin */
+    IOPORT_PERIPHERAL_USB_FS = (0x13UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a USB high speed peripheral pin */
+    IOPORT_PERIPHERAL_USB_HS = (0x14UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a GPT peripheral pin */
+    IOPORT_PERIPHERAL_GPT2 = (0x14UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as an SD/MMC peripheral pin */
+    IOPORT_PERIPHERAL_SDHI_MMC = (0x15UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a GPT peripheral pin */
+    IOPORT_PERIPHERAL_GPT3 = (0x15UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as an Ethernet MMI peripheral pin */
+    IOPORT_PERIPHERAL_ETHER_MII = (0x16UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a GPT peripheral pin */
+    IOPORT_PERIPHERAL_GPT4 = (0x16UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as an Ethernet RMMI peripheral pin */
+    IOPORT_PERIPHERAL_ETHER_RMII = (0x17UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a PDC peripheral pin */
+    IOPORT_PERIPHERAL_PDC = (0x18UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a graphics LCD peripheral pin */
+    IOPORT_PERIPHERAL_LCD_GRAPHICS = (0x19UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a CAC peripheral pin */
+    IOPORT_PERIPHERAL_CAC = (0x19UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a debug trace peripheral pin */
+    IOPORT_PERIPHERAL_TRACE = (0x1AUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a OSPI peripheral pin */
+    IOPORT_PERIPHERAL_OSPI = (0x1CUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a CEC peripheral pin */
+    IOPORT_PERIPHERAL_CEC = (0x1DUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a PGAOUT peripheral pin */
+    IOPORT_PERIPHERAL_PGAOUT0 = (0x1DUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a PGAOUT peripheral pin */
+    IOPORT_PERIPHERAL_PGAOUT1 = (0x1EUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a ULPT peripheral pin */
+    IOPORT_PERIPHERAL_ULPT = (0x1EUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as a MIPI DSI peripheral pin */
+    IOPORT_PERIPHERAL_MIPI = (0x1FUL << IOPORT_PRV_PFS_PSEL_OFFSET),
+
+    /** Pin will function as an UARTA peripheral pin */
+    IOPORT_PERIPHERAL_UARTA = (0x16UL << IOPORT_PRV_PFS_PSEL_OFFSET),
+} ioport_peripheral_t;
+#endif
+
+#ifndef BSP_OVERRIDE_IOPORT_CFG_OPTIONS_T
+
+/** Options to configure pin functions  */
+typedef enum e_ioport_cfg_options
+{
+    IOPORT_CFG_PORT_DIRECTION_INPUT  = 0x00000000, ///< Sets the pin direction to input (default)
+    IOPORT_CFG_PORT_DIRECTION_OUTPUT = 0x00000004, ///< Sets the pin direction to output
+    IOPORT_CFG_PORT_OUTPUT_LOW       = 0x00000000, ///< Sets the pin level to low
+    IOPORT_CFG_PORT_OUTPUT_HIGH      = 0x00000001, ///< Sets the pin level to high
+    IOPORT_CFG_PULLUP_ENABLE         = 0x00000010, ///< Enables the pin's internal pull-up
+    IOPORT_CFG_PIM_TTL               = 0x00000020, ///< Enables the pin's input mode
+    IOPORT_CFG_NMOS_ENABLE           = 0x00000040, ///< Enables the pin's NMOS open-drain output
+    IOPORT_CFG_PMOS_ENABLE           = 0x00000080, ///< Enables the pin's PMOS open-drain ouput
+    IOPORT_CFG_DRIVE_MID             = 0x00000400, ///< Sets pin drive output to medium
+    IOPORT_CFG_DRIVE_HS_HIGH         = 0x00000800, ///< Sets pin drive output to high along with supporting high speed
+    IOPORT_CFG_DRIVE_MID_IIC         = 0x00000800, ///< Sets pin to drive output needed for IIC on a 20mA port
+    IOPORT_CFG_DRIVE_HIGH            = 0x00000C00, ///< Sets pin drive output to high
+    IOPORT_CFG_EVENT_RISING_EDGE     = 0x00001000, ///< Sets pin event trigger to rising edge
+    IOPORT_CFG_EVENT_FALLING_EDGE    = 0x00002000, ///< Sets pin event trigger to falling edge
+    IOPORT_CFG_EVENT_BOTH_EDGES      = 0x00003000, ///< Sets pin event trigger to both edges
+    IOPORT_CFG_IRQ_ENABLE            = 0x00004000, ///< Sets pin as an IRQ pin
+    IOPORT_CFG_ANALOG_ENABLE         = 0x00008000, ///< Enables pin to operate as an analog pin
+    IOPORT_CFG_PERIPHERAL_PIN        = 0x00010000  ///< Enables pin to operate as a peripheral pin
+} ioport_cfg_options_t;
+#endif
 
 /**********************************************************************************************************************
  * Exported global variables
@@ -296,10 +511,6 @@ fsp_err_t R_IOPORT_PortEventOutputWrite(ioport_ctrl_t * const p_ctrl,
                                         ioport_size_t         mask_value);
 fsp_err_t R_IOPORT_PortRead(ioport_ctrl_t * const p_ctrl, bsp_io_port_t port, ioport_size_t * p_port_value);
 fsp_err_t R_IOPORT_PortWrite(ioport_ctrl_t * const p_ctrl, bsp_io_port_t port, ioport_size_t value, ioport_size_t mask);
-fsp_err_t R_IOPORT_EthernetModeCfg(ioport_ctrl_t * const     p_ctrl,
-                                   ioport_ethernet_channel_t channel,
-                                   ioport_ethernet_mode_t    mode);
-fsp_err_t R_IOPORT_VersionGet(fsp_version_t * p_data);
 
 /*******************************************************************************************************************//**
  * @} (end defgroup IOPORT)
